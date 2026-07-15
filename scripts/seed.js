@@ -286,12 +286,66 @@ async function main() {
     // 12. Seed Landing Pages
     console.log('Seeding landing pages...');
     const lpContent1 = JSON.stringify([
-      { type: 'hero', title: 'Eid Mubarak Mega Sale', subtitle: 'Celebrate with up to 50% discount on all premium electronics and footwear', buttonText: 'Claim Offer', buttonUrl: '/products' },
-      { type: 'features', items: ['Free Express Shipping', 'Secure 1-Click Payments', '30-Day Moneyback Guarantee'] }
+      { 
+        type: 'hero', 
+        tag: 'Product Showcase',
+        title: 'Sony WH-1000XM5 Premium Sound', 
+        subtitle: 'Experience industry-leading noise cancellation, crystal-clear calls, and up to 30 hours of battery life.', 
+        buttonText: 'Buy Sony WH-1000XM5 Now', 
+        buttonUrl: '#sales-section',
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600'
+      },
+      {
+        type: 'benefits',
+        heading: 'Why Choose Sony WH-1000XM5?',
+        subheading: 'Premium audio engineering designed for pure musical immersion and daily active workflows.',
+        items: [
+          { title: 'Auto NC Optimizer', desc: 'Noise cancelling is automatically optimized based on wearing conditions and atmospheric pressure.' },
+          { title: 'Magnificent Sound', desc: 'Precision-engineered 30mm driver unit with light and rigid dome for natural sound quality.' },
+          { title: 'All-Day Power', desc: 'Up to 30 hours of battery life with quick charging (3 min charge for 3 hours of playback).' }
+        ]
+      },
+      {
+        type: 'features',
+        heading: 'Key Product Specifications',
+        items: [
+          { title: 'Bluetooth 5.2', desc: 'Multipoint connection allows switching between two devices seamlessly.' },
+          { title: 'Speak-to-Chat', desc: 'Automatically pauses your music as soon as you start a conversation.' },
+          { title: 'Voice Pick-Up Technology', desc: 'Four beamforming microphones isolate your voice for crystal clear calls.' },
+          { title: 'Premium Carrying Case', desc: 'Collapsible case designed for easy travel and secure packing.' }
+        ]
+      },
+      {
+        type: 'testimonials',
+        heading: 'What Listeners Are Saying',
+        items: [
+          { name: 'Marcus Sterling', comment: 'The active noise cancellation is absolutely unmatched. Worth every single penny.' },
+          { name: 'Emily Thorne', comment: 'Super comfortable fit for long flights. The battery life easily got me through travel.' }
+        ]
+      },
+      {
+        type: 'sales',
+        tag: 'Launch Pricing',
+        title: 'Claim Your Sony WH-1000XM5 Today',
+        subtitle: 'Order now to receive flat welcome discounts, free DHL express shipping, and a 1-year local warranty.',
+        price: '$348.00',
+        oldPrice: '$398.00',
+        buttonText: 'Add to Cart',
+        buttonUrl: '/products/sony-wh1000xm5',
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600'
+      },
+      {
+        type: 'faq',
+        heading: 'Frequently Asked Questions',
+        items: [
+          { q: 'Is this unit water resistant?', a: 'The headphones are designed for lifestyle wear and travel; they are not IPX water-rated.' },
+          { q: 'Can I connect to a phone and laptop simultaneously?', a: 'Yes, multipoint Bluetooth allows active connection to two devices.' }
+        ]
+      }
     ]);
     await connection.execute(`
       INSERT INTO landing_pages (id, url, title, seo_title, meta_description, keywords, canonical_url, content, status) VALUES 
-      (?, 'eid-sale-2026', 'Eid Mubarak Sale Event', 'Eid Mubarak Mega Sale 2026 - Shopora', 'Shopora Eid Mubarak Special discount campaign with 50% off on all products.', 'eid sale, shopora coupons, electronics discount', 'http://localhost:3001/landing/eid-sale-2026', ?, 'PUBLISHED')
+      (?, 'eid-sale-2026', 'Sony WH-1000XM5 Premium Launch', 'Sony WH-1000XM5 Premium Sound - Shopora', 'Shopora special launch campaign page for Sony WH-1000XM5 premium headphones.', 'sony wh-1000xm5, active noise cancelling, premium audio', 'http://localhost:3001/landing/eid-sale-2026', ?, 'PUBLISHED')
     `, [crypto.randomUUID(), lpContent1]);
 
     // 13. Seed Campaigns
