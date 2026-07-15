@@ -26,26 +26,22 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     async function loadProduct() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/products?q=${params.slug}`);
+        const response = await fetch(`/api/products/${params.slug}`);
         const res = await response.json();
-        if (res.success && res.products && res.products.length > 0) {
-          const match = res.products.find((p: any) => p.slug === params.slug);
-          if (match) {
-            setProduct(match);
-            setSelectedImage(match.productImages?.[0]?.url || '');
-            setSelectedVariant(match.productVariants?.[0] || null);
-            
-            // Load related products
-            const catSlug = match.productCategories?.[0]?.category?.slug;
-            if (catSlug) {
-              const relResponse = await fetch(`/api/products?category=${catSlug}&limit=5`);
-              const relRes = await relResponse.json();
-              if (relRes.success) {
-                setRelatedProducts(relRes.products.filter((p: any) => p.id !== match.id).slice(0, 3));
-              }
+        if (res.success && res.product) {
+          const match = res.product;
+          setProduct(match);
+          setSelectedImage(match.productImages?.[0]?.url || '');
+          setSelectedVariant(match.productVariants?.[0] || null);
+          
+          // Load related products
+          const catSlug = match.productCategories?.[0]?.category?.slug;
+          if (catSlug) {
+            const relResponse = await fetch(`/api/products?category=${catSlug}&limit=5`);
+            const relRes = await relResponse.json();
+            if (relRes.success) {
+              setRelatedProducts(relRes.products.filter((p: any) => p.id !== match.id).slice(0, 3));
             }
-          } else {
-            throw new Error('Product not found.');
           }
         } else {
           throw new Error('Product details could not be retrieved.');
