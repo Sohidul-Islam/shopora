@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: shopora_web_dev
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     environment:
       NODE_ENV: development
       DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}

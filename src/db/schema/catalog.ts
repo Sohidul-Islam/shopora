@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, text, int, decimal, timestamp, boolean, mysqlEnum, index, primaryKey } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, text, int, decimal, timestamp, boolean, mysqlEnum, index, primaryKey, foreignKey } from 'drizzle-orm/mysql-core';
 
 export const categories = mysqlTable('categories', {
   id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -104,8 +104,18 @@ export const productVariants = mysqlTable('product_variants', {
 }));
 
 export const variantAttributeValues = mysqlTable('variant_attribute_values', {
-  variantId: varchar('variant_id', { length: 36 }).notNull().references(() => productVariants.id, { onDelete: 'cascade' }),
-  attributeValueId: varchar('attribute_value_id', { length: 36 }).notNull().references(() => attributeValues.id, { onDelete: 'cascade' }),
+  variantId: varchar('variant_id', { length: 36 }).notNull(),
+  attributeValueId: varchar('attribute_value_id', { length: 36 }).notNull(),
 }, (table) => ({
   pk: primaryKey({ columns: [table.variantId, table.attributeValueId] }),
+  variantIdFk: foreignKey({
+    name: 'var_attr_val_var_id_fk',
+    columns: [table.variantId],
+    foreignColumns: [productVariants.id],
+  }).onDelete('cascade'),
+  attributeValueIdFk: foreignKey({
+    name: 'var_attr_val_attr_val_id_fk',
+    columns: [table.attributeValueId],
+    foreignColumns: [attributeValues.id],
+  }).onDelete('cascade'),
 }));

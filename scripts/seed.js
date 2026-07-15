@@ -114,7 +114,7 @@ async function main() {
       (?, NULL, 'Apparel', 'apparel', 1, 1),
       (?, ?, 'Footwear', 'footwear', 1, 1),
       (?, NULL, 'Accessories', 'accessories', 0, 1)
-    `, [catElectronics, catApparel, catApparel, catFootwear, catAccessories]);
+    `, [catElectronics, catApparel, catFootwear, catApparel, catAccessories]);
 
     // 6. Seed Brands
     console.log('Seeding brands...');

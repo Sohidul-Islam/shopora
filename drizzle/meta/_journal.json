@@ -1,19 +1,12 @@
 {
-  "version": "7",
+  "version": "6",
   "dialect": "mysql",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1721035612,
-      "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
       "version": "5",
-      "when": 1784115058392,
-      "tag": "0001_clear_ben_urich",
+      "when": 1784118141329,
+      "tag": "0000_slippery_lizard",
       "breakpoints": true
     }
   ]
