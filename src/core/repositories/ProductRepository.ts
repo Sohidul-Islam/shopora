@@ -1,6 +1,6 @@
 import { db } from '../../db';
 import { products, productVariants, categories, brands, productImages, inventories, stockLogs, productCategories } from '../../db/schema';
-import { eq, and, or, like, asc, desc, between, sql, inArray } from 'drizzle-orm';
+import { eq, and, or, like, asc, desc, between, sql, inArray, isNull } from 'drizzle-orm';
 
 export interface ProductFilterOptions {
   categorySlug?: string;
@@ -18,7 +18,7 @@ export class ProductRepository {
     const { categorySlug, brandSlug, minPrice, maxPrice, searchQuery, sortBy, limit = 20, offset = 0 } = filters;
     
     // We can do advanced query compilation. Let's query using db.query API
-    let whereClauses: any[] = [eq(products.status, 'PUBLISHED')];
+    let whereClauses: any[] = [eq(products.status, 'PUBLISHED'), isNull(products.deletedAt)];
 
     if (searchQuery) {
       whereClauses.push(
@@ -214,5 +214,147 @@ export class ProductRepository {
 
   async getCategories() {
     return db.select().from(categories).where(eq(categories.visible, true));
+  }
+
+  // ── ADMIN: PRODUCTS ───────────────────────────────────────────────────────────
+
+  async listAdminProducts(filters: { status?: string; searchQuery?: string; limit?: number; offset?: number } = {}) {
+    const { status, searchQuery, limit = 100, offset = 0 } = filters;
+    const whereClauses: any[] = [isNull(products.deletedAt)];
+    if (status) whereClauses.push(eq(products.status, status as any));
+    if (searchQuery) {
+      whereClauses.push(or(like(products.name, '%' + searchQuery + '%'), like(products.sku, '%' + searchQuery + '%')));
+    }
+    return db.query.products.findMany({
+      where: and(...whereClauses),
+      limit,
+      offset,
+      orderBy: desc(products.createdAt),
+      with: {
+        brand: true,
+        productCategories: { with: { category: true } },
+        productImages: { orderBy: asc(productImages.sortOrder), limit: 1 },
+        productVariants: true,
+      }
+    });
+  }
+
+  async adminFindById(id: string) {
+    return db.query.products.findFirst({
+      where: eq(products.id, id),
+      with: {
+        brand: true,
+        productImages: { orderBy: asc(productImages.sortOrder) },
+        productCategories: { with: { category: true } },
+        productVariants: true,
+      }
+    });
+  }
+
+  async adminCreateProduct(data: typeof products.$inferInsert) {
+    const id = data.id || crypto.randomUUID();
+    await db.insert(products).values({ ...data, id });
+    return this.adminFindById(id);
+  }
+
+  async adminUpdateProduct(id: string, data: Partial<typeof products.$inferInsert>) {
+    await db.update(products).set({ ...data, updatedAt: new Date() }).where(eq(products.id, id));
+    return this.adminFindById(id);
+  }
+
+  async adminSoftDeleteProduct(id: string) {
+    await db.update(products).set({ deletedAt: new Date() }).where(eq(products.id, id));
+  }
+
+  // ── ADMIN: PRODUCT-CATEGORY ASSIGNMENTS ──────────────────────────────────────
+
+  async setProductCategories(productId: string, categoryIds: string[]) {
+    await db.delete(productCategories).where(eq(productCategories.productId, productId));
+    if (categoryIds.length > 0) {
+      await db.insert(productCategories).values(categoryIds.map(categoryId => ({ productId, categoryId })));
+    }
+  }
+
+  async assignProductToCategory(productId: string, categoryId: string) {
+    await db.insert(productCategories).values({ productId, categoryId }).onDuplicateKeyUpdate({ set: { productId } });
+  }
+
+  async removeProductFromCategory(productId: string, categoryId: string) {
+    await db.delete(productCategories).where(
+      and(eq(productCategories.productId, productId), eq(productCategories.categoryId, categoryId))
+    );
+  }
+
+  // ── ADMIN: CATEGORIES CRUD ────────────────────────────────────────────────────
+
+  async listAllCategories() {
+    return db.select().from(categories).orderBy(asc(categories.name));
+  }
+
+  async getCategoryTree() {
+    const all = await db.select().from(categories).orderBy(asc(categories.name));
+    const roots = all.filter(c => !c.parentId);
+    const children = all.filter(c => !!c.parentId);
+    return roots.map(root => ({
+      ...root,
+      children: children.filter(c => c.parentId === root.id)
+    }));
+  }
+
+  async findCategoryById(id: string) {
+    return db.query.categories.findFirst({ where: eq(categories.id, id) });
+  }
+
+  async findCategoryBySlug(slug: string) {
+    return db.query.categories.findFirst({ where: eq(categories.slug, slug) });
+  }
+
+  async createCategory(data: typeof categories.$inferInsert) {
+    const id = data.id || crypto.randomUUID();
+    await db.insert(categories).values({ ...data, id });
+    return this.findCategoryById(id);
+  }
+
+  async updateCategory(id: string, data: Partial<typeof categories.$inferInsert>) {
+    await db.update(categories).set({ ...data, updatedAt: new Date() }).where(eq(categories.id, id));
+    return this.findCategoryById(id);
+  }
+
+  async deleteCategory(id: string) {
+    // Promote children to root before deleting parent
+    const nullParent = { parentId: null } as unknown as Partial<typeof categories.$inferInsert>;
+    await db.update(categories).set(nullParent).where(eq(categories.parentId, id));
+    await db.delete(categories).where(eq(categories.id, id));
+  }
+
+  // ── ADMIN: BRANDS CRUD ────────────────────────────────────────────────────────
+
+  async listAllBrands() {
+    return db.select().from(brands).orderBy(asc(brands.name));
+  }
+
+  async findBrandById(id: string) {
+    return db.query.brands.findFirst({ where: eq(brands.id, id) });
+  }
+
+  async findBrandBySlug(slug: string) {
+    return db.query.brands.findFirst({ where: eq(brands.slug, slug) });
+  }
+
+  async createBrand(data: typeof brands.$inferInsert) {
+    const id = data.id || crypto.randomUUID();
+    await db.insert(brands).values({ ...data, id });
+    return this.findBrandById(id);
+  }
+
+  async updateBrand(id: string, data: Partial<typeof brands.$inferInsert>) {
+    await db.update(brands).set({ ...data, updatedAt: new Date() }).where(eq(brands.id, id));
+    return this.findBrandById(id);
+  }
+
+  async deleteBrand(id: string) {
+    // Detach brand from products first
+    await db.update(products).set({ brandId: null }).where(eq(products.brandId, id));
+    await db.delete(brands).where(eq(brands.id, id));
   }
 }

@@ -31,12 +31,51 @@ export default function AdminDashboard() {
     setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  // State collections for all requirements
-  const [productsList, setProductsList] = useState([
-    { id: '1', name: 'iPhone 15 Pro Max', sku: 'IPHONE15PM-BLK', brand: 'Apple', price: 1199, salePrice: 1099, stock: 5, status: 'PUBLISHED' },
-    { id: '2', name: 'Nike Air Max Running Shoes', sku: 'NIKE-AM-BLK-10', brand: 'Nike', price: 180, salePrice: 149.99, stock: 8, status: 'PUBLISHED' },
-    { id: '3', name: 'Sony WH-1000XM5 Wireless Headphones', sku: 'SONY-XM5-SLV', brand: 'Sony', price: 398, salePrice: 348, stock: 3, status: 'PUBLISHED' }
-  ]);
+  // ── API-connected state ───────────────────────────────────────────────────────
+  const [productsList, setProductsList] = useState<any[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState('');
+
+  const [apiToast, setApiToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setApiToast({ msg, type });
+    setTimeout(() => setApiToast(null), 3500);
+  };
+
+  const fetchProducts = async () => {
+    setProductsLoading(true);
+    setProductsError('');
+    try {
+      const res = await fetch('/api/admin/products');
+      const data = await res.json();
+      if (data.success) setProductsList(data.products);
+      else setProductsError(data.error || 'Failed to load products');
+    } catch {
+      setProductsError('Network error — could not load products');
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/admin/categories');
+      const data = await res.json();
+      if (data.success) setCategoriesList(data.categories);
+    } catch {}
+  };
+
+  const fetchBrands = async () => {
+    try {
+      const res = await fetch('/api/admin/brands');
+      const data = await res.json();
+      if (data.success) setBrandsList(data.brands);
+    } catch {}
+  };
+
+  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => { fetchBrands(); }, []);
 
   const [ordersList] = useState([
     { id: 'ORD-1049', customer: 'Sarah Jenkins', total: 1099.00, status: 'CONFIRMED', gateway: 'STRIPE', date: '5 mins ago' },
@@ -59,17 +98,8 @@ export default function AdminDashboard() {
     { id: 'INV-2026-002', orderId: 'ORD-1047', total: 348.00, tax: 26.10, status: 'PAID', date: '2 hours ago' }
   ]);
 
-  const [categoriesList, setCategoriesList] = useState([
-    { id: '1', name: 'Electronics', slug: 'electronics', parent: 'Root' },
-    { id: '2', name: 'Footwear', slug: 'footwear', parent: 'Root' },
-    { id: '3', name: 'Mobile Phones', slug: 'mobile-phones', parent: 'Electronics' }
-  ]);
-
-  const [brandsList, setBrandsList] = useState([
-    { id: '1', name: 'Apple Inc.', slug: 'apple', status: 'ACTIVE' },
-    { id: '2', name: 'Nike', slug: 'nike', status: 'ACTIVE' },
-    { id: '3', name: 'Sony', slug: 'sony', status: 'ACTIVE' }
-  ]);
+  const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [brandsList, setBrandsList] = useState<any[]>([]);
 
   const [warehousesList] = useState([
     { id: '1', name: 'San Francisco Main Depot', code: 'SF-DEPOT-01', location: '100 Main St, SF, CA' },
@@ -160,14 +190,17 @@ export default function AdminDashboard() {
   // CRUD Interactive Modals/Form States
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [prodForm, setProdForm] = useState({ name: '', sku: '', brand: '', price: 0, stock: 0 });
+  const [prodFormSaving, setProdFormSaving] = useState(false);
+  const [prodForm, setProdForm] = useState({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] as string[] });
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [catForm, setCatForm] = useState({ name: '', slug: '', parent: 'Root' });
+  const [catFormSaving, setCatFormSaving] = useState(false);
+  const [catForm, setCatForm] = useState({ name: '', slug: '', parentId: '', visible: true, featured: false });
 
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<any>(null);
+  const [brandFormSaving, setBrandFormSaving] = useState(false);
   const [brandForm, setBrandForm] = useState({ name: '', slug: '', status: 'ACTIVE' });
 
   // Keyboard shortcut listener
@@ -212,77 +245,121 @@ export default function AdminDashboard() {
     setTimeout(() => setNewPageSuccess(''), 3000);
   };
 
+  // Slug auto-generator
+  const toSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
   // Products CRUD handlers
   const openAddProduct = () => {
     setEditingProduct(null);
-    setProdForm({ name: '', sku: '', brand: '', price: 99, stock: 15 });
+    setProdForm({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] });
     setShowProductModal(true);
   };
 
   const openEditProduct = (p: any) => {
     setEditingProduct(p);
-    setProdForm({ name: p.name, sku: p.sku, brand: p.brand, price: p.price, stock: p.stock });
+    setProdForm({
+      name: p.name || '',
+      slug: p.slug || '',
+      sku: p.sku || '',
+      brandId: p.brandId || p.brand?.id || '',
+      price: String(p.price || ''),
+      salePrice: String(p.salePrice || ''),
+      description: p.description || '',
+      status: p.status || 'DRAFT',
+      categoryIds: (p.productCategories || []).map((pc: any) => pc.categoryId || pc.category?.id).filter(Boolean),
+    });
     setShowProductModal(true);
   };
 
-  const saveProduct = (e: React.FormEvent) => {
+  const saveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingProduct) {
-      setProductsList(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...prodForm } : p));
-    } else {
-      const newP = {
-        id: String(Date.now()),
-        name: prodForm.name,
-        sku: prodForm.sku,
-        brand: prodForm.brand,
-        price: prodForm.price,
-        salePrice: prodForm.price,
-        stock: prodForm.stock,
-        status: 'PUBLISHED'
-      };
-      setProductsList([newP, ...productsList]);
+    setProdFormSaving(true);
+    try {
+      const payload = { ...prodForm, price: String(prodForm.price), salePrice: prodForm.salePrice ? String(prodForm.salePrice) : undefined };
+      const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products';
+      const method = editingProduct ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(editingProduct ? 'Product updated successfully!' : 'Product created successfully!');
+      setShowProductModal(false);
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save product', 'error');
+    } finally {
+      setProdFormSaving(false);
     }
-    setShowProductModal(false);
   };
 
-  const deleteProduct = (id: string) => {
-    if (confirm('Are you sure you want to remove this product?')) {
-      setProductsList(prev => prev.filter(p => p.id !== id));
+  const toggleProductStatus = async (p: any) => {
+    const newStatus = p.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+    try {
+      const res = await fetch(`/api/admin/products/${p.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(`Product ${newStatus === 'PUBLISHED' ? 'published' : 'set to draft'}.`);
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update status', 'error');
+    }
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this product? This is a soft delete.')) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Product deleted successfully.');
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete product', 'error');
     }
   };
 
   // Categories CRUD handlers
   const openAddCategory = () => {
     setEditingCategory(null);
-    setCatForm({ name: '', slug: '', parent: 'Root' });
+    setCatForm({ name: '', slug: '', parentId: '', visible: true, featured: false });
     setShowCategoryModal(true);
   };
 
   const openEditCategory = (c: any) => {
     setEditingCategory(c);
-    setCatForm({ name: c.name, slug: c.slug, parent: c.parent });
+    setCatForm({ name: c.name, slug: c.slug, parentId: c.parentId || '', visible: c.visible ?? true, featured: c.featured ?? false });
     setShowCategoryModal(true);
   };
 
-  const saveCategory = (e: React.FormEvent) => {
+  const saveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCategory) {
-      setCategoriesList(prev => prev.map(c => c.id === editingCategory.id ? { ...c, ...catForm } : c));
-    } else {
-      const newC = {
-        id: String(Date.now()),
-        name: catForm.name,
-        slug: catForm.slug,
-        parent: catForm.parent
-      };
-      setCategoriesList([...categoriesList, newC]);
+    setCatFormSaving(true);
+    try {
+      const payload = { ...catForm, parentId: catForm.parentId || null };
+      const url = editingCategory ? `/api/admin/categories/${editingCategory.id}` : '/api/admin/categories';
+      const method = editingCategory ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(editingCategory ? 'Category updated!' : 'Category created!');
+      setShowCategoryModal(false);
+      fetchCategories();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save category', 'error');
+    } finally {
+      setCatFormSaving(false);
     }
-    setShowCategoryModal(false);
   };
 
-  const deleteCategory = (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      setCategoriesList(prev => prev.filter(c => c.id !== id));
+  const deleteCategory = async (id: string) => {
+    if (!confirm('Delete this category? Sub-categories will become root nodes.')) return;
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Category deleted.');
+      fetchCategories();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete category', 'error');
     }
   };
 
@@ -299,25 +376,35 @@ export default function AdminDashboard() {
     setShowBrandModal(true);
   };
 
-  const saveBrand = (e: React.FormEvent) => {
+  const saveBrand = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingBrand) {
-      setBrandsList(prev => prev.map(b => b.id === editingBrand.id ? { ...b, ...brandForm } : b));
-    } else {
-      const newB = {
-        id: String(Date.now()),
-        name: brandForm.name,
-        slug: brandForm.slug,
-        status: brandForm.status
-      };
-      setBrandsList([...brandsList, newB]);
+    setBrandFormSaving(true);
+    try {
+      const url = editingBrand ? `/api/admin/brands/${editingBrand.id}` : '/api/admin/brands';
+      const method = editingBrand ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(brandForm) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(editingBrand ? 'Brand updated!' : 'Brand registered!');
+      setShowBrandModal(false);
+      fetchBrands();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save brand', 'error');
+    } finally {
+      setBrandFormSaving(false);
     }
-    setShowBrandModal(false);
   };
 
-  const deleteBrand = (id: string) => {
-    if (confirm('Are you sure you want to remove this brand partner?')) {
-      setBrandsList(prev => prev.filter(b => b.id !== id));
+  const deleteBrand = async (id: string) => {
+    if (!confirm('Remove this brand? Products will have their brand unlinked.')) return;
+    try {
+      const res = await fetch(`/api/admin/brands/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Brand deleted.');
+      fetchBrands();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete brand', 'error');
     }
   };
 
@@ -357,6 +444,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] text-slate-100 flex">
+      {/* Global API Toast */}
+      {apiToast && (
+        <div className={`fixed top-5 right-5 z-[100] px-5 py-3 rounded-2xl text-xs font-bold shadow-2xl border transition-all ${
+          apiToast.type === 'success'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+            : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+        }`}>
+          {apiToast.type === 'success' ? '✓' : '✗'} {apiToast.msg}
+        </div>
+      )}
       
       {/* 1. COLLAPSIBLE ACCORDION SIDEBAR */}
       <aside className="w-64 bg-[#06080e]/95 border-r border-slate-900/60 p-5 flex flex-col justify-between shrink-0 hidden md:flex">
@@ -867,10 +964,10 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black font-display text-white">Active Product Catalogue</h2>
-                  <p className="text-xs text-slate-400">Manage all dynamic products, update pricing metrics, and inventory parameters.</p>
+                  <h2 className="text-2xl font-black font-display text-white">Product Catalogue</h2>
+                  <p className="text-xs text-slate-400">Manage all products — create, edit, publish, and delete with full field support.</p>
                 </div>
-                <button 
+                <button
                   onClick={openAddProduct}
                   className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
@@ -879,48 +976,89 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
+              {productsError && (
+                <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">{productsError}</div>
+              )}
+
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
-                        <th className="py-2.5">SKU</th>
-                        <th className="py-2.5">Name</th>
-                        <th className="py-2.5">Brand</th>
-                        <th className="py-2.5">Price</th>
-                        <th className="py-2.5">Stock</th>
-                        <th className="py-2.5 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-900/60">
-                      {productsList.map(p => (
-                        <tr key={p.id} className="text-slate-300 font-semibold">
-                          <td className="py-3 font-mono text-blue-400">{p.sku}</td>
-                          <td className="py-3 font-bold text-white">{p.name}</td>
-                          <td className="py-3">{p.brand}</td>
-                          <td className="py-3">{formatPrice(p.price)}</td>
-                          <td className="py-3">
-                            <span className={`px-2 py-0.5 rounded font-black ${p.stock < 6 ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{p.stock} units</span>
-                          </td>
-                          <td className="py-3 text-right space-x-2">
-                            <button 
-                              onClick={() => openEditProduct(p)}
-                              className="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </button>
-                            <button 
-                              onClick={() => deleteProduct(p.id)}
-                              className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-450 hover:text-white transition inline-flex"
-                            >
-                              <Trash className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
+                {productsLoading ? (
+                  <div className="text-center py-12 text-slate-500 text-xs font-semibold">Loading products from database...</div>
+                ) : productsList.length === 0 ? (
+                  <div className="text-center py-12 text-slate-500 text-xs">
+                    <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p>No products found. Add your first product to get started.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                          <th className="py-2.5">SKU</th>
+                          <th className="py-2.5">Name</th>
+                          <th className="py-2.5">Brand</th>
+                          <th className="py-2.5">Price</th>
+                          <th className="py-2.5">Categories</th>
+                          <th className="py-2.5">Status</th>
+                          <th className="py-2.5 text-right">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-900/60">
+                        {productsList.map(p => (
+                          <tr key={p.id} className="text-slate-300 font-semibold hover:bg-slate-900/30 transition">
+                            <td className="py-3 font-mono text-blue-400">{p.sku}</td>
+                            <td className="py-3">
+                              <div className="font-bold text-white">{p.name}</div>
+                              <div className="text-[10px] text-slate-500">/{p.slug}</div>
+                            </td>
+                            <td className="py-3">{p.brand?.name || '—'}</td>
+                            <td className="py-3">
+                              <div>{formatPrice(p.price)}</div>
+                              {p.salePrice && <div className="text-[10px] text-emerald-400">Sale: {formatPrice(p.salePrice)}</div>}
+                            </td>
+                            <td className="py-3">
+                              <div className="flex flex-wrap gap-1">
+                                {(p.productCategories || []).slice(0, 2).map((pc: any) => (
+                                  <span key={pc.categoryId || pc.category?.id} className="px-1.5 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-bold">
+                                    {pc.category?.name || '—'}
+                                  </span>
+                                ))}
+                                {(p.productCategories || []).length > 2 && (
+                                  <span className="text-[10px] text-slate-500">+{p.productCategories.length - 2}</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-3">
+                              <button
+                                onClick={() => toggleProductStatus(p)}
+                                className={`px-2 py-0.5 rounded text-[10px] font-black transition ${
+                                  p.status === 'PUBLISHED' ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white' :
+                                  p.status === 'DRAFT' ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-white' :
+                                  'bg-rose-500/10 text-rose-400'
+                                }`}
+                              >
+                                {p.status}
+                              </button>
+                            </td>
+                            <td className="py-3 text-right space-x-2">
+                              <button
+                                onClick={() => openEditProduct(p)}
+                                className="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => deleteProduct(p.id)}
+                                className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"
+                              >
+                                <Trash className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -930,43 +1068,83 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black font-display text-white">Categories Tree & Hierarchy</h2>
-                  <p className="text-xs text-slate-400">Map parent relationships and define active category nodes.</p>
+                  <h2 className="text-2xl font-black font-display text-white">Categories & Sub-categories</h2>
+                  <p className="text-xs text-slate-400">Full hierarchy tree — create root categories and nest sub-categories under parents.</p>
                 </div>
-                <button 
+                <button
                   onClick={openAddCategory}
                   className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add New Category</span>
+                  <span>Add Category</span>
                 </button>
               </div>
 
-              <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
-                <div className="space-y-3">
-                  {categoriesList.map(cat => (
-                    <div key={cat.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
-                      <div>
-                        <h4 className="font-bold text-white">{cat.name}</h4>
-                        <span className="text-[10px] text-slate-500">Slug: /category/{cat.slug} • Parent: {cat.parent}</span>
+              <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 space-y-2">
+                {categoriesList.length === 0 ? (
+                  <div className="text-center py-10 text-slate-500 text-xs">No categories found. Add your first category.</div>
+                ) : (
+                  // Root categories first, then sub-categories indented
+                  (() => {
+                    const roots = categoriesList.filter(c => !c.parentId);
+                    const children = categoriesList.filter(c => !!c.parentId);
+                    return (
+                      <div className="space-y-2">
+                        {roots.map(cat => (
+                          <div key={cat.id}>
+                            {/* Root category row */}
+                            <div className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-800 rounded-2xl text-xs">
+                              <div className="flex items-center space-x-3">
+                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                <div>
+                                  <h4 className="font-bold text-white">{cat.name}</h4>
+                                  <span className="text-[10px] text-slate-500">/category/{cat.slug} • Root</span>
+                                  <div className="flex gap-2 mt-1">
+                                    {cat.visible && <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-bold">VISIBLE</span>}
+                                    {cat.featured && <span className="text-[10px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded font-bold">FEATURED</span>}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-x-2">
+                                <button onClick={() => openEditCategory(cat)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => deleteCategory(cat.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3.5 h-3.5" /></button>
+                              </div>
+                            </div>
+                            {/* Sub-category children */}
+                            {children.filter(c => c.parentId === cat.id).map(sub => (
+                              <div key={sub.id} className="flex justify-between items-center p-3 bg-slate-950/60 border border-slate-900 rounded-xl text-xs ml-6 mt-1.5">
+                                <div className="flex items-center space-x-3">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                                  <div>
+                                    <h4 className="font-semibold text-slate-300">{sub.name}</h4>
+                                    <span className="text-[10px] text-slate-600">/category/{sub.slug} • Sub-category of {cat.name}</span>
+                                  </div>
+                                </div>
+                                <div className="space-x-2">
+                                  <button onClick={() => openEditCategory(sub)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
+                                  <button onClick={() => deleteCategory(sub.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3 h-3" /></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                        {/* Orphan children (parent was deleted) */}
+                        {children.filter(c => !roots.find(r => r.id === c.parentId)).map(orphan => (
+                          <div key={orphan.id} className="flex justify-between items-center p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl text-xs">
+                            <div>
+                              <h4 className="font-semibold text-amber-400">{orphan.name} <span className="text-[10px] font-normal">(orphaned — parent removed)</span></h4>
+                              <span className="text-[10px] text-slate-600">/category/{orphan.slug}</span>
+                            </div>
+                            <div className="space-x-2">
+                              <button onClick={() => openEditCategory(orphan)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
+                              <button onClick={() => deleteCategory(orphan.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3 h-3" /></button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="space-x-2">
-                        <button 
-                          onClick={() => openEditCategory(cat)}
-                          className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 rounded-lg text-slate-400 hover:text-white transition inline-flex"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                          onClick={() => deleteCategory(cat.id)}
-                          className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-455 hover:text-white transition inline-flex"
-                        >
-                          <Trash className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  })()
+                )}
               </div>
             </div>
           )}
@@ -1747,68 +1925,107 @@ export default function AdminDashboard() {
       {/* 4. CRUD Modals */}
       {/* Product Add/Edit Modal */}
       {showProductModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
-            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-450 hover:text-white"><X className="w-5 h-5" /></button>
-            <h3 className="text-lg font-black font-display text-white">{editingProduct ? 'Edit Product Settings' : 'Add New Product'}</h3>
-            
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-2xl w-full relative space-y-5 shadow-2xl my-4">
+            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+            <div>
+              <h3 className="text-xl font-black font-display text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">All fields marked * are required. Changes persist to the database.</p>
+            </div>
+
             <form onSubmit={saveProduct} className="space-y-4 text-xs font-semibold text-slate-400">
-              <div className="space-y-1">
-                <label className="block">Product Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={prodForm.name} 
-                  onChange={(e) => setProdForm({ ...prodForm, name: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                />
-              </div>
+              {/* Row 1: Name + Slug */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">SKU Code</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={prodForm.sku} 
-                    onChange={(e) => setProdForm({ ...prodForm, sku: e.target.value })} 
-                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                  />
+                  <label className="block">Product Name *</label>
+                  <input type="text" required value={prodForm.name}
+                    onChange={(e) => setProdForm({ ...prodForm, name: e.target.value, slug: editingProduct ? prodForm.slug : toSlug(e.target.value) })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. Sony WH-1000XM5" />
+                </div>
+                <div className="space-y-1">
+                  <label className="block">URL Slug *</label>
+                  <input type="text" required value={prodForm.slug}
+                    onChange={(e) => setProdForm({ ...prodForm, slug: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. sony-wh-1000xm5" />
+                </div>
+              </div>
+
+              {/* Row 2: SKU + Brand */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block">SKU Code *</label>
+                  <input type="text" required value={prodForm.sku}
+                    onChange={(e) => setProdForm({ ...prodForm, sku: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. SONY-XM5-BLK" />
                 </div>
                 <div className="space-y-1">
                   <label className="block">Brand</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={prodForm.brand} 
-                    onChange={(e) => setProdForm({ ...prodForm, brand: e.target.value })} 
-                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                  />
+                  <select value={prodForm.brandId} onChange={(e) => setProdForm({ ...prodForm, brandId: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                    <option value="">— No Brand —</option>
+                    {brandsList.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
                 </div>
               </div>
+
+              {/* Row 3: Price + Sale Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">Regular Price</label>
-                  <input 
-                    type="number" 
-                    required
-                    value={prodForm.price} 
-                    onChange={(e) => setProdForm({ ...prodForm, price: Number(e.target.value) })} 
-                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                  />
+                  <label className="block">Regular Price * ($)</label>
+                  <input type="number" required step="0.01" value={prodForm.price}
+                    onChange={(e) => setProdForm({ ...prodForm, price: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    placeholder="0.00" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block">Stock Units</label>
-                  <input 
-                    type="number" 
-                    required
-                    value={prodForm.stock} 
-                    onChange={(e) => setProdForm({ ...prodForm, stock: Number(e.target.value) })} 
-                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                  />
+                  <label className="block">Sale Price ($) <span className="text-slate-600 font-normal">(optional)</span></label>
+                  <input type="number" step="0.01" value={prodForm.salePrice}
+                    onChange={(e) => setProdForm({ ...prodForm, salePrice: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    placeholder="0.00" />
                 </div>
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
-                {editingProduct ? 'Save Product Changes' : 'Publish Product'}
+
+              {/* Description */}
+              <div className="space-y-1">
+                <label className="block">Description</label>
+                <textarea value={prodForm.description}
+                  onChange={(e) => setProdForm({ ...prodForm, description: e.target.value })}
+                  rows={3}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500 resize-none"
+                  placeholder="Product description..." />
+              </div>
+
+              {/* Categories */}
+              <div className="space-y-1">
+                <label className="block">Categories <span className="text-slate-600 font-normal">(hold Ctrl/Cmd to multi-select)</span></label>
+                <select multiple value={prodForm.categoryIds}
+                  onChange={(e) => setProdForm({ ...prodForm, categoryIds: Array.from(e.target.selectedOptions, o => o.value) })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-2 text-white focus:outline-none focus:border-blue-500" style={{ height: '100px' }}>
+                  {categoriesList.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.parentId ? '↳ ' : ''}{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-1">
+                <label className="block">Publication Status *</label>
+                <select value={prodForm.status} onChange={(e) => setProdForm({ ...prodForm, status: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                  <option value="DRAFT">DRAFT — not visible to customers</option>
+                  <option value="PUBLISHED">PUBLISHED — live on storefront</option>
+                  <option value="OUT_OF_STOCK">OUT_OF_STOCK — shown but unavailable</option>
+                </select>
+              </div>
+
+              <button type="submit" disabled={prodFormSaving}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                {prodFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                <span>{prodFormSaving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create Product'}</span>
               </button>
             </form>
           </div>
@@ -1817,47 +2034,59 @@ export default function AdminDashboard() {
 
       {/* Category Add/Edit Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
-            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-450 hover:text-white"><X className="w-5 h-5" /></button>
-            <h3 className="text-lg font-black font-display text-white">{editingCategory ? 'Edit Category Node' : 'Add New Category'}</h3>
-            
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-lg w-full relative space-y-5 shadow-2xl">
+            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+            <div>
+              <h3 className="text-xl font-black font-display text-white">{editingCategory ? 'Edit Category' : 'Add Category / Sub-category'}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">Leave Parent empty to create a root category. Select a parent to make it a sub-category.</p>
+            </div>
+
             <form onSubmit={saveCategory} className="space-y-4 text-xs font-semibold text-slate-400">
-              <div className="space-y-1">
-                <label className="block">Category Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={catForm.name} 
-                  onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block">Category Name *</label>
+                  <input type="text" required value={catForm.name}
+                    onChange={(e) => setCatForm({ ...catForm, name: e.target.value, slug: editingCategory ? catForm.slug : toSlug(e.target.value) })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. Electronics" />
+                </div>
+                <div className="space-y-1">
+                  <label className="block">Slug *</label>
+                  <input type="text" required value={catForm.slug}
+                    onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })}
+                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    placeholder="e.g. electronics" />
+                </div>
               </div>
+
               <div className="space-y-1">
-                <label className="block">Slug Path</label>
-                <input 
-                  type="text" 
-                  required
-                  value={catForm.slug} 
-                  onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="block">Parent Node</label>
-                <select 
-                  value={catForm.parent}
-                  onChange={(e) => setCatForm({ ...catForm, parent: e.target.value })}
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="Root">Root (No Parent)</option>
-                  {categoriesList.filter(c => c.id !== editingCategory?.id).map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
+                <label className="block">Parent Category <span className="text-slate-600 font-normal">(leave empty for root)</span></label>
+                <select value={catForm.parentId}
+                  onChange={(e) => setCatForm({ ...catForm, parentId: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                  <option value="">— Root (no parent) —</option>
+                  {categoriesList.filter(c => !c.parentId && c.id !== editingCategory?.id).map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
-                {editingCategory ? 'Save Node Changes' : 'Create Category'}
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                  <input type="checkbox" checked={catForm.visible} onChange={(e) => setCatForm({ ...catForm, visible: e.target.checked })} className="accent-blue-500" />
+                  <span>Visible on storefront</span>
+                </label>
+                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                  <input type="checkbox" checked={catForm.featured} onChange={(e) => setCatForm({ ...catForm, featured: e.target.checked })} className="accent-amber-500" />
+                  <span>Featured category</span>
+                </label>
+              </div>
+
+              <button type="submit" disabled={catFormSaving}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                {catFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                <span>{catFormSaving ? 'Saving...' : editingCategory ? 'Save Changes' : catForm.parentId ? 'Create Sub-category' : 'Create Category'}</span>
               </button>
             </form>
           </div>
@@ -1866,45 +2095,41 @@ export default function AdminDashboard() {
 
       {/* Brand Add/Edit Modal */}
       {showBrandModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
-            <button onClick={() => setShowBrandModal(false)} className="absolute top-4 right-4 text-slate-455 hover:text-white"><X className="w-5 h-5" /></button>
-            <h3 className="text-lg font-black font-display text-white">{editingBrand ? 'Edit Brand Partner' : 'Register Brand Partner'}</h3>
-            
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl">
+            <button onClick={() => setShowBrandModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+            <div>
+              <h3 className="text-xl font-black font-display text-white">{editingBrand ? 'Edit Brand' : 'Register Brand Partner'}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">Brand slug is used in product URLs and storefront filters.</p>
+            </div>
+
             <form onSubmit={saveBrand} className="space-y-4 text-xs font-semibold text-slate-400">
               <div className="space-y-1">
-                <label className="block">Brand Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={brandForm.name} 
-                  onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                />
+                <label className="block">Brand Name *</label>
+                <input type="text" required value={brandForm.name}
+                  onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value, slug: editingBrand ? brandForm.slug : toSlug(e.target.value) })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. Sony Electronics" />
               </div>
               <div className="space-y-1">
-                <label className="block">Brand Slug</label>
-                <input 
-                  type="text" 
-                  required
-                  value={brandForm.slug} 
-                  onChange={(e) => setBrandForm({ ...brandForm, slug: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
-                />
+                <label className="block">URL Slug *</label>
+                <input type="text" required value={brandForm.slug}
+                  onChange={(e) => setBrandForm({ ...brandForm, slug: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. sony" />
               </div>
               <div className="space-y-1">
                 <label className="block">Status</label>
-                <select 
-                  value={brandForm.status} 
-                  onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value })} 
-                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="ACTIVE">ACTIVE</option>
-                  <option value="INACTIVE">INACTIVE</option>
+                <select value={brandForm.status} onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                  <option value="ACTIVE">ACTIVE — visible in storefront filters</option>
+                  <option value="INACTIVE">INACTIVE — hidden from customers</option>
                 </select>
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
-                {editingBrand ? 'Save Brand Profile' : 'Register Brand'}
+              <button type="submit" disabled={brandFormSaving}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                {brandFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                <span>{brandFormSaving ? 'Saving...' : editingBrand ? 'Save Changes' : 'Register Brand'}</span>
               </button>
             </form>
           </div>
