@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { formatPrice } from '../../lib/utils';
 import Link from 'next/link';
 import {
@@ -9,8 +9,9 @@ import {
   Flame, FileText, Search, Bell, HelpCircle, Shield, 
   MapPin, CheckCircle2, ChevronRight, Copy, Download, Trash, UserCheck, Key,
   ChevronDown, DollarSign, Tag, RefreshCcw, Landmark, Users2, Calendar,
-  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X
+  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X, Image as ImageIcon
 } from 'lucide-react';
+import { ImageUploader, ProductImageGallery } from '../../components/admin/ImageUploader';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -201,7 +202,20 @@ export default function AdminDashboard() {
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<any>(null);
   const [brandFormSaving, setBrandFormSaving] = useState(false);
-  const [brandForm, setBrandForm] = useState({ name: '', slug: '', status: 'ACTIVE' });
+  const [brandForm, setBrandForm] = useState({ name: '', slug: '', status: 'ACTIVE', logoUrl: '' });
+
+  // Image upload state
+  const [productImages, setProductImages] = useState<any[]>([]);
+  const [catBannerUrl, setCatBannerUrl] = useState('');
+  const [catIconUrl, setCatIconUrl] = useState('');
+
+  const fetchProductImages = useCallback(async (productId: string) => {
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/images`);
+      const data = await res.json();
+      if (data.success) setProductImages(data.images);
+    } catch {}
+  }, []);
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -252,6 +266,7 @@ export default function AdminDashboard() {
   const openAddProduct = () => {
     setEditingProduct(null);
     setProdForm({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] });
+    setProductImages([]);
     setShowProductModal(true);
   };
 
@@ -268,6 +283,8 @@ export default function AdminDashboard() {
       status: p.status || 'DRAFT',
       categoryIds: (p.productCategories || []).map((pc: any) => pc.categoryId || pc.category?.id).filter(Boolean),
     });
+    setProductImages([]);
+    fetchProductImages(p.id);
     setShowProductModal(true);
   };
 
@@ -321,12 +338,16 @@ export default function AdminDashboard() {
   const openAddCategory = () => {
     setEditingCategory(null);
     setCatForm({ name: '', slug: '', parentId: '', visible: true, featured: false });
+    setCatBannerUrl('');
+    setCatIconUrl('');
     setShowCategoryModal(true);
   };
 
   const openEditCategory = (c: any) => {
     setEditingCategory(c);
     setCatForm({ name: c.name, slug: c.slug, parentId: c.parentId || '', visible: c.visible ?? true, featured: c.featured ?? false });
+    setCatBannerUrl(c.bannerUrl || '');
+    setCatIconUrl(c.iconUrl || '');
     setShowCategoryModal(true);
   };
 
@@ -334,7 +355,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     setCatFormSaving(true);
     try {
-      const payload = { ...catForm, parentId: catForm.parentId || null };
+      const payload = { ...catForm, parentId: catForm.parentId || null, bannerUrl: catBannerUrl || null, iconUrl: catIconUrl || null };
       const url = editingCategory ? `/api/admin/categories/${editingCategory.id}` : '/api/admin/categories';
       const method = editingCategory ? 'PATCH' : 'POST';
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -366,13 +387,13 @@ export default function AdminDashboard() {
   // Brands CRUD handlers
   const openAddBrand = () => {
     setEditingBrand(null);
-    setBrandForm({ name: '', slug: '', status: 'ACTIVE' });
+    setBrandForm({ name: '', slug: '', status: 'ACTIVE', logoUrl: '' });
     setShowBrandModal(true);
   };
 
   const openEditBrand = (b: any) => {
     setEditingBrand(b);
-    setBrandForm({ name: b.name, slug: b.slug, status: b.status });
+    setBrandForm({ name: b.name, slug: b.slug, status: b.status, logoUrl: b.logoUrl || '' });
     setShowBrandModal(true);
   };
 
@@ -2021,6 +2042,18 @@ export default function AdminDashboard() {
                   <option value="OUT_OF_STOCK">OUT_OF_STOCK — shown but unavailable</option>
                 </select>
               </div>
+
+              {/* Product Image Gallery — shown when editing OR after product is created */}
+              {editingProduct && (
+                <div className="pt-2 border-t border-slate-900">
+                  <ProductImageGallery
+                    productId={editingProduct.id}
+                    images={productImages}
+                    onRefresh={() => fetchProductImages(editingProduct.id)}
+                  />
+                  <p className="text-[10px] text-slate-600 mt-1">Tip: Save the product first, then upload images. First image becomes the primary display image.</p>
+                </div>
+              )}
 
               <button type="submit" disabled={prodFormSaving}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
