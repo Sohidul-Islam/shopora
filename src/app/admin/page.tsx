@@ -5,25 +5,15 @@ import { formatPrice } from '../../lib/utils';
 import Link from 'next/link';
 import {
   TrendingUp, Package, ShoppingBag, Users, AlertTriangle, RefreshCw, 
-  Settings, Activity, Layers, Percent, BookOpen, LayoutGrid, Sparkles, Award,
+  Settings, Activity, Layers, Percent, BookOpen, LayoutGrid, Sparkles, Award, Plus,
   Flame, FileText, Search, Bell, HelpCircle, Shield, 
   MapPin, CheckCircle2, ChevronRight, Copy, Download, Trash, UserCheck, Key,
   ChevronDown, DollarSign, Tag, RefreshCcw, Landmark, Users2, Calendar,
-  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send
+  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [metrics] = useState({
-    revenueToday: 1397.99,
-    revenueMonth: 28450.00,
-    aov: 145.50,
-    abandonmentRate: '28.4%',
-    ordersCount: 142,
-    customersCount: 89,
-    returnsToday: 2,
-    refundsToday: 1
-  });
   const [searchQuery, setSearchQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -69,13 +59,13 @@ export default function AdminDashboard() {
     { id: 'INV-2026-002', orderId: 'ORD-1047', total: 348.00, tax: 26.10, status: 'PAID', date: '2 hours ago' }
   ]);
 
-  const [categoriesList] = useState([
+  const [categoriesList, setCategoriesList] = useState([
     { id: '1', name: 'Electronics', slug: 'electronics', parent: 'Root' },
     { id: '2', name: 'Footwear', slug: 'footwear', parent: 'Root' },
     { id: '3', name: 'Mobile Phones', slug: 'mobile-phones', parent: 'Electronics' }
   ]);
 
-  const [brandsList] = useState([
+  const [brandsList, setBrandsList] = useState([
     { id: '1', name: 'Apple Inc.', slug: 'apple', status: 'ACTIVE' },
     { id: '2', name: 'Nike', slug: 'nike', status: 'ACTIVE' },
     { id: '3', name: 'Sony', slug: 'sony', status: 'ACTIVE' }
@@ -141,12 +131,23 @@ export default function AdminDashboard() {
     { id: '2', admin: 'Jane Doe', action: 'Published campaign Summer Season Splash', ip: '192.168.1.105', date: '1 hour ago' }
   ]);
 
-  // Adjust Stock Level Form
+  // Operational metrics
+  const [metrics] = useState({
+    revenueToday: 1397.99,
+    revenueMonth: 28450.00,
+    aov: 145.50,
+    abandonmentRate: '28.4%',
+    ordersCount: 142,
+    customersCount: 89,
+    returnsToday: 2,
+    refundsToday: 1
+  });
+
+  // Forms state
   const [adjustSku, setAdjustSku] = useState('SONY-XM5-SLV');
   const [adjustQty, setAdjustQty] = useState(10);
   const [stockSuccess, setStockSuccess] = useState('');
 
-  // Landing Page Builder Form
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageUrl, setNewPageUrl] = useState('');
   const [newPageSuccess, setNewPageSuccess] = useState('');
@@ -156,40 +157,20 @@ export default function AdminDashboard() {
   const [seoDesc, setSeoDesc] = useState('Shop premium electronics, athletic footwear, and apparel at Shopora.');
   const [seoSaved, setSeoSaved] = useState(false);
 
-  // Command Palette links
-  const commandPaletteLinks = [
-    { title: 'Overview Dashboard', tab: 'dashboard', category: 'General' },
-    { title: 'Orders Fulfillments', tab: 'orders', category: 'Sales' },
-    { title: 'Returns & Refunds', tab: 'returns', category: 'Sales' },
-    { title: 'Invoices Audit', tab: 'invoices', category: 'Sales' },
-    { title: 'Payment logs', tab: 'payments', category: 'Sales' },
-    { title: 'Products Catalogue', tab: 'products', category: 'Catalog' },
-    { title: 'Categories Tree', tab: 'categories', category: 'Catalog' },
-    { title: 'Brand Partners', tab: 'brands', category: 'Catalog' },
-    { title: 'Depots & Warehouses', tab: 'warehouses', category: 'Catalog' },
-    { title: 'Stock Transfers', tab: 'transfers', category: 'Catalog' },
-    { title: 'Suppliers Registry', tab: 'suppliers', category: 'Catalog' },
-    { title: 'Customers Directory', tab: 'customers', category: 'Customers' },
-    { title: 'Customer Groups & Tiers', tab: 'groups', category: 'Customers' },
-    { title: 'Product Reviews', tab: 'reviews', category: 'Customers' },
-    { title: 'Support Tickets', tab: 'tickets', category: 'Customers' },
-    { title: 'Campaigns & Coupons', tab: 'campaigns', category: 'Marketing' },
-    { title: 'Landing Page Builder', tab: 'landing', category: 'Marketing' },
-    { title: 'Blog Articles', tab: 'blog', category: 'Marketing' },
-    { title: 'SEO Metadata', tab: 'seo', category: 'Marketing' },
-    { title: 'Announcement Bars', tab: 'announcements', category: 'Content' },
-    { title: 'FAQ Accordions', tab: 'faqs', category: 'Content' },
-    { title: 'Reports & Exports', tab: 'analytics', category: 'Reports' },
-    { title: 'RBAC Staff Administrators', tab: 'users', category: 'System' },
-    { title: 'Activity logs', tab: 'logs', category: 'System' },
-    { title: 'Store settings', tab: 'settings', category: 'System' }
-  ];
+  // CRUD Interactive Modals/Form States
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [prodForm, setProdForm] = useState({ name: '', sku: '', brand: '', price: 0, stock: 0 });
 
-  const filteredPaletteLinks = commandPaletteLinks.filter(lnk =>
-    lnk.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lnk.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [catForm, setCatForm] = useState({ name: '', slug: '', parent: 'Root' });
 
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<any>(null);
+  const [brandForm, setBrandForm] = useState({ name: '', slug: '', status: 'ACTIVE' });
+
+  // Keyboard shortcut listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -230,6 +211,149 @@ export default function AdminDashboard() {
     setNewPageUrl('');
     setTimeout(() => setNewPageSuccess(''), 3000);
   };
+
+  // Products CRUD handlers
+  const openAddProduct = () => {
+    setEditingProduct(null);
+    setProdForm({ name: '', sku: '', brand: '', price: 99, stock: 15 });
+    setShowProductModal(true);
+  };
+
+  const openEditProduct = (p: any) => {
+    setEditingProduct(p);
+    setProdForm({ name: p.name, sku: p.sku, brand: p.brand, price: p.price, stock: p.stock });
+    setShowProductModal(true);
+  };
+
+  const saveProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingProduct) {
+      setProductsList(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...prodForm } : p));
+    } else {
+      const newP = {
+        id: String(Date.now()),
+        name: prodForm.name,
+        sku: prodForm.sku,
+        brand: prodForm.brand,
+        price: prodForm.price,
+        salePrice: prodForm.price,
+        stock: prodForm.stock,
+        status: 'PUBLISHED'
+      };
+      setProductsList([newP, ...productsList]);
+    }
+    setShowProductModal(false);
+  };
+
+  const deleteProduct = (id: string) => {
+    if (confirm('Are you sure you want to remove this product?')) {
+      setProductsList(prev => prev.filter(p => p.id !== id));
+    }
+  };
+
+  // Categories CRUD handlers
+  const openAddCategory = () => {
+    setEditingCategory(null);
+    setCatForm({ name: '', slug: '', parent: 'Root' });
+    setShowCategoryModal(true);
+  };
+
+  const openEditCategory = (c: any) => {
+    setEditingCategory(c);
+    setCatForm({ name: c.name, slug: c.slug, parent: c.parent });
+    setShowCategoryModal(true);
+  };
+
+  const saveCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingCategory) {
+      setCategoriesList(prev => prev.map(c => c.id === editingCategory.id ? { ...c, ...catForm } : c));
+    } else {
+      const newC = {
+        id: String(Date.now()),
+        name: catForm.name,
+        slug: catForm.slug,
+        parent: catForm.parent
+      };
+      setCategoriesList([...categoriesList, newC]);
+    }
+    setShowCategoryModal(false);
+  };
+
+  const deleteCategory = (id: string) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      setCategoriesList(prev => prev.filter(c => c.id !== id));
+    }
+  };
+
+  // Brands CRUD handlers
+  const openAddBrand = () => {
+    setEditingBrand(null);
+    setBrandForm({ name: '', slug: '', status: 'ACTIVE' });
+    setShowBrandModal(true);
+  };
+
+  const openEditBrand = (b: any) => {
+    setEditingBrand(b);
+    setBrandForm({ name: b.name, slug: b.slug, status: b.status });
+    setShowBrandModal(true);
+  };
+
+  const saveBrand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingBrand) {
+      setBrandsList(prev => prev.map(b => b.id === editingBrand.id ? { ...b, ...brandForm } : b));
+    } else {
+      const newB = {
+        id: String(Date.now()),
+        name: brandForm.name,
+        slug: brandForm.slug,
+        status: brandForm.status
+      };
+      setBrandsList([...brandsList, newB]);
+    }
+    setShowBrandModal(false);
+  };
+
+  const deleteBrand = (id: string) => {
+    if (confirm('Are you sure you want to remove this brand partner?')) {
+      setBrandsList(prev => prev.filter(b => b.id !== id));
+    }
+  };
+
+  // Command Palette links
+  const commandPaletteLinks = [
+    { title: 'Overview Dashboard', tab: 'dashboard', category: 'General' },
+    { title: 'Orders Fulfillments', tab: 'orders', category: 'Sales' },
+    { title: 'Returns & Refunds', tab: 'returns', category: 'Sales' },
+    { title: 'Invoices Audit', tab: 'invoices', category: 'Sales' },
+    { title: 'Payment logs', tab: 'payments', category: 'Sales' },
+    { title: 'Products Catalogue', tab: 'products', category: 'Catalog' },
+    { title: 'Categories Tree', tab: 'categories', category: 'Catalog' },
+    { title: 'Brand Partners', tab: 'brands', category: 'Catalog' },
+    { title: 'Depots & Warehouses', tab: 'warehouses', category: 'Catalog' },
+    { title: 'Stock Transfers', tab: 'transfers', category: 'Catalog' },
+    { title: 'Suppliers Registry', tab: 'suppliers', category: 'Catalog' },
+    { title: 'Customers Directory', tab: 'customers', category: 'Customers' },
+    { title: 'Customer Groups & Tiers', tab: 'groups', category: 'Customers' },
+    { title: 'Product Reviews', tab: 'reviews', category: 'Customers' },
+    { title: 'Support Tickets', tab: 'tickets', category: 'Customers' },
+    { title: 'Campaigns & Coupons', tab: 'campaigns', category: 'Marketing' },
+    { title: 'Landing Page Builder', tab: 'landing', category: 'Marketing' },
+    { title: 'Blog Articles', tab: 'blog', category: 'Marketing' },
+    { title: 'SEO Metadata', tab: 'seo', category: 'Marketing' },
+    { title: 'Announcement Bars', tab: 'announcements', category: 'Content' },
+    { title: 'FAQ Accordions', tab: 'faqs', category: 'Content' },
+    { title: 'Reports & Exports', tab: 'analytics', category: 'Reports' },
+    { title: 'RBAC Staff Administrators', tab: 'users', category: 'System' },
+    { title: 'Activity logs', tab: 'logs', category: 'System' },
+    { title: 'Store settings', tab: 'settings', category: 'System' }
+  ];
+
+  const filteredPaletteLinks = commandPaletteLinks.filter(lnk =>
+    lnk.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    lnk.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] text-slate-100 flex">
@@ -738,12 +862,21 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 6: PRODUCTS CATALOGUE */}
+          {/* TAB 6: PRODUCTS CATALOGUE (CRUD ACTIVE) */}
           {activeTab === 'products' && (
             <div className="space-y-6">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Active Product Catalogue</h2>
-                <p className="text-xs text-slate-400">Edit model descriptions, manage status variables, and trace regular prices.</p>
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black font-display text-white">Active Product Catalogue</h2>
+                  <p className="text-xs text-slate-400">Manage all dynamic products, update pricing metrics, and inventory parameters.</p>
+                </div>
+                <button 
+                  onClick={openAddProduct}
+                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Product</span>
+                </button>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
@@ -754,23 +887,34 @@ export default function AdminDashboard() {
                         <th className="py-2.5">SKU</th>
                         <th className="py-2.5">Name</th>
                         <th className="py-2.5">Brand</th>
-                        <th className="py-2.5">Regular Price</th>
+                        <th className="py-2.5">Price</th>
                         <th className="py-2.5">Stock</th>
-                        <th className="py-2.5">Status</th>
+                        <th className="py-2.5 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-900/60">
                       {productsList.map(p => (
                         <tr key={p.id} className="text-slate-300 font-semibold">
                           <td className="py-3 font-mono text-blue-400">{p.sku}</td>
-                          <td className="py-3">{p.name}</td>
+                          <td className="py-3 font-bold text-white">{p.name}</td>
                           <td className="py-3">{p.brand}</td>
-                          <td className="py-3">{formatPrice(p.salePrice || p.price)}</td>
+                          <td className="py-3">{formatPrice(p.price)}</td>
                           <td className="py-3">
                             <span className={`px-2 py-0.5 rounded font-black ${p.stock < 6 ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{p.stock} units</span>
                           </td>
-                          <td className="py-3">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500/10 text-blue-400">{p.status}</span>
+                          <td className="py-3 text-right space-x-2">
+                            <button 
+                              onClick={() => openEditProduct(p)}
+                              className="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button 
+                              onClick={() => deleteProduct(p.id)}
+                              className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-450 hover:text-white transition inline-flex"
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -781,12 +925,21 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 7: CATEGORIES TREE */}
+          {/* TAB 7: CATEGORIES TREE (CRUD ACTIVE) */}
           {activeTab === 'categories' && (
             <div className="space-y-6">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Categories Tree & Hierarchy</h2>
-                <p className="text-xs text-slate-400">Map parent relationships and define visible tags.</p>
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black font-display text-white">Categories Tree & Hierarchy</h2>
+                  <p className="text-xs text-slate-400">Map parent relationships and define active category nodes.</p>
+                </div>
+                <button 
+                  onClick={openAddCategory}
+                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add New Category</span>
+                </button>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
@@ -795,9 +948,22 @@ export default function AdminDashboard() {
                     <div key={cat.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                       <div>
                         <h4 className="font-bold text-white">{cat.name}</h4>
-                        <span className="text-[10px] text-slate-500">Slug: /category/{cat.slug}</span>
+                        <span className="text-[10px] text-slate-500">Slug: /category/{cat.slug} • Parent: {cat.parent}</span>
                       </div>
-                      <span className="px-2 py-1 rounded bg-[#0a0c14] border border-slate-800 text-[10px] font-bold text-slate-400">Parent: {cat.parent}</span>
+                      <div className="space-x-2">
+                        <button 
+                          onClick={() => openEditCategory(cat)}
+                          className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-850 rounded-lg text-slate-400 hover:text-white transition inline-flex"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => deleteCategory(cat.id)}
+                          className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-455 hover:text-white transition inline-flex"
+                        >
+                          <Trash className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -805,18 +971,43 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 8: BRANDS PARTNERS */}
+          {/* TAB 8: BRANDS PARTNERS (CRUD ACTIVE) */}
           {activeTab === 'brands' && (
             <div className="space-y-6">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Official Brand Partners</h2>
-                <p className="text-xs text-slate-400">Manage brand registry details and logo configurations.</p>
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black font-display text-white">Official Brand Partners</h2>
+                  <p className="text-xs text-slate-400">Manage partner brand registry profiles and storefront logo mappings.</p>
+                </div>
+                <button 
+                  onClick={openAddBrand}
+                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Register Brand</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {brandsList.map(br => (
-                  <div key={br.id} className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-extrabold">{br.status}</span>
+                  <div key={br.id} className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10 relative">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-extrabold">{br.status}</span>
+                      <div className="space-x-1">
+                        <button 
+                          onClick={() => openEditBrand(br)}
+                          className="p-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded text-slate-400 hover:text-white transition inline-flex"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={() => deleteBrand(br.id)}
+                          className="p-1 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded text-rose-450 hover:text-white transition inline-flex"
+                        >
+                          <Trash className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
                     <h3 className="text-xl font-bold font-display text-white">{br.name}</h3>
                     <p className="text-xs text-slate-500">Slug: /brand/{br.slug}</p>
                   </div>
@@ -1549,6 +1740,173 @@ export default function AdminDashboard() {
               <span>Use arrow keys to navigate (mocked)</span>
               <span>ESC to exit</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. CRUD Modals */}
+      {/* Product Add/Edit Modal */}
+      {showProductModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
+            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-450 hover:text-white"><X className="w-5 h-5" /></button>
+            <h3 className="text-lg font-black font-display text-white">{editingProduct ? 'Edit Product Settings' : 'Add New Product'}</h3>
+            
+            <form onSubmit={saveProduct} className="space-y-4 text-xs font-semibold text-slate-400">
+              <div className="space-y-1">
+                <label className="block">Product Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={prodForm.name} 
+                  onChange={(e) => setProdForm({ ...prodForm, name: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block">SKU Code</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={prodForm.sku} 
+                    onChange={(e) => setProdForm({ ...prodForm, sku: e.target.value })} 
+                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block">Brand</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={prodForm.brand} 
+                    onChange={(e) => setProdForm({ ...prodForm, brand: e.target.value })} 
+                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block">Regular Price</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={prodForm.price} 
+                    onChange={(e) => setProdForm({ ...prodForm, price: Number(e.target.value) })} 
+                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block">Stock Units</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={prodForm.stock} 
+                    onChange={(e) => setProdForm({ ...prodForm, stock: Number(e.target.value) })} 
+                    className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                  />
+                </div>
+              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+                {editingProduct ? 'Save Product Changes' : 'Publish Product'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Add/Edit Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
+            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-450 hover:text-white"><X className="w-5 h-5" /></button>
+            <h3 className="text-lg font-black font-display text-white">{editingCategory ? 'Edit Category Node' : 'Add New Category'}</h3>
+            
+            <form onSubmit={saveCategory} className="space-y-4 text-xs font-semibold text-slate-400">
+              <div className="space-y-1">
+                <label className="block">Category Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={catForm.name} 
+                  onChange={(e) => setCatForm({ ...catForm, name: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Slug Path</label>
+                <input 
+                  type="text" 
+                  required
+                  value={catForm.slug} 
+                  onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Parent Node</label>
+                <select 
+                  value={catForm.parent}
+                  onChange={(e) => setCatForm({ ...catForm, parent: e.target.value })}
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="Root">Root (No Parent)</option>
+                  {categoriesList.filter(c => c.id !== editingCategory?.id).map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+                {editingCategory ? 'Save Node Changes' : 'Create Category'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Brand Add/Edit Modal */}
+      {showBrandModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-6 max-w-md w-full relative space-y-4 shadow-2xl">
+            <button onClick={() => setShowBrandModal(false)} className="absolute top-4 right-4 text-slate-455 hover:text-white"><X className="w-5 h-5" /></button>
+            <h3 className="text-lg font-black font-display text-white">{editingBrand ? 'Edit Brand Partner' : 'Register Brand Partner'}</h3>
+            
+            <form onSubmit={saveBrand} className="space-y-4 text-xs font-semibold text-slate-400">
+              <div className="space-y-1">
+                <label className="block">Brand Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={brandForm.name} 
+                  onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Brand Slug</label>
+                <input 
+                  type="text" 
+                  required
+                  value={brandForm.slug} 
+                  onChange={(e) => setBrandForm({ ...brandForm, slug: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Status</label>
+                <select 
+                  value={brandForm.status} 
+                  onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value })} 
+                  className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
+                </select>
+              </div>
+              <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+                {editingBrand ? 'Save Brand Profile' : 'Register Brand'}
+              </button>
+            </form>
           </div>
         </div>
       )}
