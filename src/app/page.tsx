@@ -53,27 +53,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
       
-      {/* Premium Header */}
-      <header className="glass-header sticky top-0 z-50 py-4 px-6 sm:px-12 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Sparkles className="w-5 h-5 text-blue-400" />
-          <span className="text-xl font-extrabold font-display tracking-tight text-white">SHOPORA</span>
-        </div>
 
-        <nav className="hidden md:flex items-center space-x-8 text-xs uppercase tracking-widest font-semibold text-slate-400">
-          <Link href="/products" className="hover:text-white transition">Catalogue</Link>
-          <Link href="/products?category=electronics" className="hover:text-white transition">Electronics</Link>
-          <Link href="/products?category=footwear" className="hover:text-white transition">Footwear</Link>
-          <Link href="/admin" className="hover:text-white transition text-blue-400">Admin Panel</Link>
-        </nav>
-
-        <div className="flex items-center space-x-4">
-          <Link href="/cart" className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-350 hover:text-white transition flex items-center space-x-2 text-xs font-semibold">
-            <ShoppingCart className="w-4 h-4" />
-            <span>Cart</span>
-          </Link>
-        </div>
-      </header>
 
       {/* Main Home Sections */}
       <main className="flex-1 pb-16 space-y-20">

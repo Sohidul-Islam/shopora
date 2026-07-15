@@ -1,4 +1,5 @@
 import './globals.css';
+import Header from '../components/Header';
 
 export const metadata = {
   title: 'Shopora',
@@ -12,7 +13,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 antialiased">{children}</body>
+      <body className="bg-[#05060b] text-slate-100 antialiased min-h-screen flex flex-col justify-between">
+        <div>
+          <Header />
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

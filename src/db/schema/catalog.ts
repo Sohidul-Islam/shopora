@@ -1,4 +1,5 @@
 import { mysqlTable, varchar, text, int, decimal, timestamp, boolean, mysqlEnum, index, primaryKey, foreignKey } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
 
 export const categories = mysqlTable('categories', {
   id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -118,4 +119,64 @@ export const variantAttributeValues = mysqlTable('variant_attribute_values', {
     columns: [table.attributeValueId],
     foreignColumns: [attributeValues.id],
   }).onDelete('cascade'),
+}));
+
+// Relation definitions
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  productCategories: many(productCategories),
+}));
+
+export const brandsRelations = relations(brands, ({ many }) => ({
+  products: many(products),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  brand: one(brands, {
+    fields: [products.brandId],
+    references: [brands.id],
+  }),
+  productCategories: many(productCategories),
+  productImages: many(productImages),
+  productVariants: many(productVariants),
+}));
+
+export const productCategoriesRelations = relations(productCategories, ({ one }) => ({
+  product: one(products, {
+    fields: [productCategories.productId],
+    references: [products.id],
+  }),
+  category: one(categories, {
+    fields: [productCategories.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
+    references: [products.id],
+  }),
+}));
+
+export const productVariantsRelations = relations(productVariants, ({ one, many }) => ({
+  product: one(products, {
+    fields: [productVariants.productId],
+    references: [products.id],
+  }),
+  variantAttributeValues: many(variantAttributeValues),
+}));
+
+export const variantAttributeValuesRelations = relations(variantAttributeValues, ({ one }) => ({
+  variant: one(productVariants, {
+    fields: [variantAttributeValues.variantId],
+    references: [productVariants.id],
+  }),
+  attributeValue: one(attributeValues, {
+    fields: [variantAttributeValues.attributeValueId],
+    references: [attributeValues.id],
+  }),
+}));
+
+export const attributeValuesRelations = relations(attributeValues, ({ many }) => ({
+  variantAttributeValues: many(variantAttributeValues),
 }));

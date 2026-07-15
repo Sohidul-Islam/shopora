@@ -1,4 +1,5 @@
 import { mysqlTable, varchar, text, int, timestamp, index, primaryKey } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
 
 export const roles = mysqlTable('roles', {
   id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -55,3 +56,17 @@ export const oauthAccounts = mysqlTable('oauth_accounts', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });
+
+export const usersRelations = relations(users, ({ one }) => ({
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));

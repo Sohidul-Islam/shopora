@@ -1,4 +1,5 @@
 import { mysqlTable, varchar, text, int, decimal, timestamp, boolean, mysqlEnum } from 'drizzle-orm/mysql-core';
+import { relations } from 'drizzle-orm';
 import { users } from './auth';
 import { productVariants } from './catalog';
 
@@ -90,3 +91,47 @@ export const couponUsages = mysqlTable('coupon_usages', {
   orderId: varchar('order_id', { length: 36 }).notNull().references(() => orders.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Relations
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  user: one(users, {
+    fields: [orders.userId],
+    references: [users.id],
+  }),
+  shippingAddress: one(addresses, {
+    fields: [orders.shippingAddressId],
+    references: [addresses.id],
+  }),
+  billingAddress: one(addresses, {
+    fields: [orders.billingAddressId],
+    references: [addresses.id],
+  }),
+  orderItems: many(orderItems),
+  orderStatusLogs: many(orderStatusLogs),
+  payments: many(payments),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+  productVariant: one(productVariants, {
+    fields: [orderItems.productVariantId],
+    references: [productVariants.id],
+  }),
+}));
+
+export const orderStatusLogsRelations = relations(orderStatusLogs, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderStatusLogs.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  order: one(orders, {
+    fields: [payments.orderId],
+    references: [orders.id],
+  }),
+}));
