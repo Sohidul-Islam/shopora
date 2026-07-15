@@ -4,7 +4,19 @@ const crypto = require('crypto');
 async function main() {
   const connectionString = process.env.DATABASE_URL || 'mysql://shopora:shopora_password@127.0.0.1:3306/shopora';
   console.log('Seeding database with URL:', connectionString.replace(/:[^:@/]+@/, ':***@'));
-  const connection = await mysql.createConnection(connectionString);
+  let connection;
+  let retries = 10;
+  while (retries > 0) {
+    try {
+      connection = await mysql.createConnection(connectionString);
+      break;
+    } catch (err) {
+      console.log(`Database connection failed. Retrying in 3 seconds... (${retries} attempts left)`);
+      retries -= 1;
+      if (retries === 0) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  }
 
   try {
     console.log('Clearing existing data...');
