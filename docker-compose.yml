@@ -22,6 +22,8 @@ services:
         condition: service_healthy
       db-migrate:
         condition: service_completed_successfully
+      db-seed:
+        condition: service_completed_successfully
     networks:
       - shopora_net
     healthcheck:
@@ -108,6 +110,23 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - shopora_net
+
+  # Database Seeder Runner
+  db-seed:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: shopora_db_seed
+    command: npm run db:seed
+    environment:
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     networks:
       - shopora_net
 

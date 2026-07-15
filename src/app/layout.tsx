@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   title: 'Shopora',
   description: 'Enterprise E-commerce Platform',
