@@ -2,53 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --background: #fafafa;
-  --foreground: #111;
-  --card: rgba(255, 255, 255, 0.7);
-  --border: rgba(0, 0, 0, 0.08);
+  --foreground: #111115;
+  --card: rgba(255, 255, 255, 0.65);
+  --border: rgba(0, 0, 0, 0.06);
+  --accent: 59, 102, 255;
 }
 
 .dark {
-  --background: #090a0f;
-  --foreground: #f3f4f6;
-  --card: rgba(17, 18, 28, 0.7);
-  --border: rgba(255, 255, 255, 0.06);
+  --background: #05060b;
+  --foreground: #f8fafc;
+  --card: rgba(10, 11, 20, 0.55);
+  --border: rgba(255, 255, 255, 0.04);
+  --accent: 59, 130, 246; /* Neon Blue */
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+}
+
+/* Deeper Premium Background Glow */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  height: 600px;
+  background: radial-gradient(circle 800px at 50% -200px, rgba(59, 130, 246, 0.12), transparent 80%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Headers Typography */
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Outfit', sans-serif;
 }
 
 /* Glassmorphism Styles */
 .glass {
   background: var(--card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 }
 
 .glass-header {
-  background: rgba(250, 250, 250, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(250, 250, 250, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
 
 .dark .glass-header {
-  background: rgba(9, 10, 15, 0.8);
+  background: rgba(5, 6, 11, 0.7);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -56,33 +83,44 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 99px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(59, 130, 246, 0.3);
 }
 
 /* Premium Card hover micro-animations */
 .hover-premium {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.hover-premium:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
-  border-color: rgba(59, 102, 255, 0.3);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dark .hover-premium:hover {
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.4);
-  border-color: rgba(59, 102, 255, 0.4);
+.hover-premium:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* Shimmer/Pulse loading skeleton animation */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.35;
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+}
+
+.skeleton-shimmer {
+  animation: skeleton-pulse 2s infinite ease-in-out;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }

@@ -110,7 +110,7 @@ function ProductListContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] text-slate-200 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         {/* Sidebar Filters */}
@@ -128,10 +128,10 @@ function ProductListContent() {
                 <button
                   key={cat.slug}
                   onClick={() => updateFilters({ category: cat.slug })}
-                  className={`text-left text-sm py-1.5 px-3 rounded-lg transition font-medium ${
+                  className={`text-left text-sm py-2 px-3.5 rounded-xl transition-all duration-300 font-medium ${
                     categoryFilter === cat.slug
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-450 hover:text-white hover:bg-slate-900/60'
+                      ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/10'
+                      : 'text-slate-400 hover:text-blue-400 hover:bg-slate-900/40'
                   }`}
                 >
                   {cat.name}
@@ -148,10 +148,10 @@ function ProductListContent() {
                 <button
                   key={brand.slug}
                   onClick={() => updateFilters({ brand: brand.slug })}
-                  className={`text-left text-sm py-1.5 px-3 rounded-lg transition font-medium ${
+                  className={`text-left text-sm py-2 px-3.5 rounded-xl transition-all duration-300 font-medium ${
                     brandFilter === brand.slug
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-450 hover:text-white hover:bg-slate-900/60'
+                      ? 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/10'
+                      : 'text-slate-400 hover:text-blue-400 hover:bg-slate-900/40'
                   }`}
                 >
                   {brand.name}
@@ -201,7 +201,7 @@ function ProductListContent() {
               <select
                 value={sortFilter}
                 onChange={(e) => updateFilters({ sortBy: e.target.value })}
-                className="bg-slate-900 border border-slate-800 text-slate-350 rounded-xl py-2 px-3.5 text-xs font-semibold focus:outline-none"
+                className="bg-slate-900 border border-slate-800 text-slate-300 rounded-xl py-2 px-3.5 text-xs font-semibold focus:outline-none focus:border-blue-500 transition-all cursor-pointer"
               >
                 <option value="newest">Sort: Newest First</option>
                 <option value="oldest">Sort: Oldest First</option>
@@ -230,7 +230,7 @@ function ProductListContent() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="glass border border-slate-800 rounded-2xl h-80 animate-pulse" />
+                <div key={i} className="glass border border-slate-800/40 rounded-3xl h-[380px] skeleton-shimmer" />
               ))}
             </div>
           ) : productsList.length === 0 ? (
@@ -247,12 +247,12 @@ function ProductListContent() {
                 return (
                   <div
                     key={prod.id}
-                    className={`glass border border-slate-800/70 rounded-2xl overflow-hidden hover-premium ${
-                      viewMode === 'list' ? 'flex flex-col sm:flex-row items-center p-4 gap-6' : 'relative'
+                    className={`glass border border-slate-800/40 rounded-3xl overflow-hidden hover-premium shadow-lg shadow-black/20 ${
+                      viewMode === 'list' ? 'flex flex-col sm:flex-row items-center p-5 gap-6' : 'relative'
                     }`}
                   >
-                    <div className={`relative bg-slate-900 overflow-hidden shrink-0 ${viewMode === 'list' ? 'w-full sm:w-36 h-36 rounded-xl' : 'aspect-square'}`}>
-                      <img src={prod.productImages?.[0]?.url} alt={prod.name} className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+                    <div className={`relative bg-[#0d0f17] overflow-hidden shrink-0 ${viewMode === 'list' ? 'w-full sm:w-40 h-40 rounded-2xl' : 'aspect-square'}`}>
+                      <img src={prod.productImages?.[0]?.url} alt={prod.name} className="w-full h-full object-cover hover:scale-105 transition duration-700" />
                       <button
                         onClick={() => toggleWishlist({
                           id: prod.id,
@@ -261,57 +261,66 @@ function ProductListContent() {
                           price: Number(prod.price),
                           image: prod.productImages?.[0]?.url || ''
                         })}
-                        className={`absolute top-3 right-3 p-1.5 rounded-full border transition ${
+                        className={`absolute top-4 right-4 p-2 rounded-full border transition-all duration-300 ${
                           isWished
-                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-500'
-                            : 'bg-slate-950/65 border-slate-800/80 text-slate-400 hover:text-white'
+                            ? 'bg-rose-500/20 border-rose-500/30 text-rose-500 scale-110'
+                            : 'bg-[#090b11]/80 border-slate-800/80 text-slate-400 hover:text-rose-400 hover:scale-110'
                         }`}
                       >
                         <Heart className="w-4 h-4 fill-current" />
                       </button>
                     </div>
 
-                    <div className={`p-5 flex-1 flex flex-col justify-between ${viewMode === 'list' ? 'w-full text-left' : 'space-y-4'}`}>
-                      <div className="space-y-1">
-                        <span className="text-[10px] tracking-widest text-slate-500 font-bold uppercase block">{prod.brand?.name}</span>
-                        <h4 className="font-semibold text-white hover:text-blue-400 transition text-base">
+                    <div className={`p-6 flex-1 flex flex-col justify-between ${viewMode === 'list' ? 'w-full text-left' : 'space-y-4'}`}>
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] tracking-widest text-blue-400 font-extrabold uppercase block">{prod.brand?.name || 'Shopora'}</span>
+                        <h4 className="font-bold text-white hover:text-blue-400 transition text-lg tracking-tight leading-snug">
                           <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
                         </h4>
                         {viewMode === 'list' && (
                           <p className="text-xs text-slate-400 line-clamp-2 mt-1">{prod.description}</p>
                         )}
-                        <div className="flex items-center space-x-1.5 pt-1">
+                        <div className="flex items-center space-x-1 pt-1">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
+                            <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           ))}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-slate-900 pt-4 mt-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-base font-bold text-white">
-                            {formatPrice(prod.salePrice || prod.price)}
-                          </span>
-                          {prod.salePrice && (
-                            <span className="text-xs text-slate-500 line-through">
-                              {formatPrice(prod.price)}
+                      <div className="flex items-center justify-between border-t border-slate-900/60 pt-4 mt-2">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-slate-400 font-semibold mb-0.5">Price</span>
+                          <div className="flex items-baseline space-x-2">
+                            <span className="text-lg font-extrabold text-white font-display">
+                              {formatPrice(prod.salePrice || prod.price)}
                             </span>
-                          )}
+                            {prod.salePrice && (
+                              <span className="text-xs text-slate-500 line-through">
+                                {formatPrice(prod.price)}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <button
                           onClick={() => handleAddToCartClick(prod)}
                           disabled={firstVariant?.stock === 0}
-                          className={`p-2 rounded-xl transition ${
+                          className={`flex items-center space-x-1.5 py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
                             isAdded
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-950/10'
+                              ? 'bg-emerald-600/90 text-white'
+                              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/25 hover:shadow-blue-900/40'
                           }`}
                         >
                           {isAdded ? (
-                            <CheckCircle2 className="w-4 h-4" />
+                            <>
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Added</span>
+                            </>
                           ) : (
-                            <ShoppingCart className="w-4 h-4" />
+                            <>
+                              <ShoppingCart className="w-4 h-4" />
+                              <span>Add</span>
+                            </>
                           )}
                         </button>
                       </div>
