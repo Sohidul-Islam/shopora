@@ -68,3 +68,44 @@ export const activityLogs = mysqlTable('activity_logs', {
   ipAddress: varchar('ip_address', { length: 45 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+export const blogPosts = mysqlTable('blog_posts', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  content: text('content').notNull(),
+  authorName: varchar('author_name', { length: 100 }).notNull().default('Shopora Team'),
+  imageUrl: varchar('image_url', { length: 2048 }),
+  readTime: varchar('read_time', { length: 50 }).notNull().default('5 min read'),
+  publishedAt: timestamp('published_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+});
+
+export const landingPages = mysqlTable('landing_pages', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  url: varchar('url', { length: 255 }).notNull().unique(),
+  title: varchar('title', { length: 255 }).notNull(),
+  seoTitle: varchar('seo_title', { length: 255 }),
+  metaDescription: text('meta_description'),
+  keywords: text('keywords'),
+  canonicalUrl: varchar('canonical_url', { length: 2048 }),
+  ogImage: varchar('og_image', { length: 2048 }),
+  content: text('content').notNull(), // JSON block content
+  status: mysqlEnum('status', ['DRAFT', 'PUBLISHED']).default('DRAFT').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+});
+
+export const campaigns = mysqlTable('campaigns', {
+  id: varchar('id', { length: 36 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  bannerUrl: varchar('banner_url', { length: 2048 }).notNull(),
+  countdownEnd: timestamp('countdown_end'),
+  couponCode: varchar('coupon_code', { length: 50 }),
+  promoContent: text('promo_content'),
+  status: mysqlEnum('status', ['ACTIVE', 'INACTIVE']).default('ACTIVE').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+});

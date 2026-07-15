@@ -275,6 +275,33 @@ async function main() {
       (?, 'What is the return policy?', 'You can return any unused items within 30 days of purchase.', 1)
     `, [crypto.randomUUID(), crypto.randomUUID()]);
 
+    // 11. Seed Blog Posts
+    console.log('Seeding blog posts...');
+    await connection.execute(`
+      INSERT INTO blog_posts (id, title, slug, content, author_name, image_url, read_time, published_at) VALUES 
+      (?, 'The Future of Mobile Technology: What to Expect', 'future-of-mobile-tech', '<h2>The Mobile Landscape is Changing Fast</h2><p>From satellite connectivity to generative AI embedded directly in the processor, mobile phones are transforming from simple communication portals into fully agentic AI devices. With next-generation chips like the A17 Pro and upcoming designs, processing power is matching desktop speeds.</p><h3>Key Takeaways</h3><ul><li>Direct on-device AI integration.</li><li>Ultra-long battery life with silicon-carbon technology.</li><li>Enhanced AR glasses compatibility.</li></ul>', 'Alex Mercer', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800', '4 min read', '2026-07-01 10:00:00'),
+      (?, 'The Ultimate Guide to Premium Athletic Footwear', 'premium-athletic-footwear-guide', '<h2>Performance Meets Lifestyle</h2><p>Athletic shoes are no longer just for the track. Modern engineering has introduced dual-pressure air cushioning and breathable mesh uppers, making performance shoes a staple of everyday street style. Choosing the correct arch support and design protects your joints during training.</p>', 'Sarah Jenkins', 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800', '6 min read', '2026-07-10 14:30:00')
+    `, [crypto.randomUUID(), crypto.randomUUID()]);
+
+    // 12. Seed Landing Pages
+    console.log('Seeding landing pages...');
+    const lpContent1 = JSON.stringify([
+      { type: 'hero', title: 'Eid Mubarak Mega Sale', subtitle: 'Celebrate with up to 50% discount on all premium electronics and footwear', buttonText: 'Claim Offer', buttonUrl: '/products' },
+      { type: 'features', items: ['Free Express Shipping', 'Secure 1-Click Payments', '30-Day Moneyback Guarantee'] }
+    ]);
+    await connection.execute(`
+      INSERT INTO landing_pages (id, url, title, seo_title, meta_description, keywords, canonical_url, content, status) VALUES 
+      (?, 'eid-sale-2026', 'Eid Mubarak Sale Event', 'Eid Mubarak Mega Sale 2026 - Shopora', 'Shopora Eid Mubarak Special discount campaign with 50% off on all products.', 'eid sale, shopora coupons, electronics discount', 'http://localhost:3001/landing/eid-sale-2026', ?, 'PUBLISHED')
+    `, [crypto.randomUUID(), lpContent1]);
+
+    // 13. Seed Campaigns
+    console.log('Seeding campaigns...');
+    await connection.execute(`
+      INSERT INTO campaigns (id, title, slug, banner_url, countdown_end, coupon_code, promo_content, status) VALUES 
+      (?, 'Summer Season Splash', 'summer-sale', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200', '2027-08-31 23:59:59', 'SUMMER20', 'Get an instant 20% discount on summer apparel, footwear, and accessories.', 'ACTIVE'),
+      (?, 'Black Friday Extravaganza', 'black-friday', 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1200', '2027-11-28 23:59:59', 'BF50', 'Get 50% off on all premium brands and categories for a limited time.', 'ACTIVE')
+    `, [crypto.randomUUID(), crypto.randomUUID()]);
+
     // Re-enable foreign key checks
     await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
     console.log('Database seeded successfully with all modules!');

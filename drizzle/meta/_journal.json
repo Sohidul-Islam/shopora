@@ -8,6 +8,13 @@
       "when": 1784118141329,
       "tag": "0000_slippery_lizard",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1784120040416,
+      "tag": "0001_fuzzy_crystal",
+      "breakpoints": true
     }
   ]
 }

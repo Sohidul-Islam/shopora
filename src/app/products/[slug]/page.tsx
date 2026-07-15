@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useStore, CartItem } from '../../../store/useStore';
 import { formatPrice } from '../../../lib/utils';
-import { Star, Heart, CheckCircle2, ChevronRight, Truck, RefreshCcw, ShieldCheck, ShoppingBag } from 'lucide-react';
+import Countdown from '../../../components/Countdown';
+import { 
+  Star, Heart, ChevronRight, Truck, RefreshCcw, 
+  ShieldCheck, ShoppingBag, Flame, Gift, Copy, Award, ShieldAlert, Sparkles 
+} from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
@@ -15,44 +19,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [addedMessage, setAddedMessage] = useState(false);
-
-  useEffect(() => {
-    async function loadProduct() {
-      try {
-        setLoading(true);
-        // In clean architecture, Next.js calls local api or repository directly.
-        // We will fetch from /api/products and filter by slug
-        const response = await fetch(`/api/products?q=${params.slug}`);
-        const res = await response.json();
-        if (res.success && res.products && res.products.length > 0) {
-          // match exact slug
-          const match = res.products.find((p: any) => p.slug === params.slug);
-          if (match) {
-            setProduct(match);
-            setSelectedImage(match.productImages?.[0]?.url || '');
-            setSelectedVariant(match.productVariants?.[0] || null);
-          } else {
-            throw new Error('Product not found.');
-          }
-        } else {
-          throw new Error('Product details could not be retrieved.');
-        }
-      } catch (err: any) {
-        setError(err.message || 'Error loading product.');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadProduct();
-  }, [params.slug]);
-
+  const [showSticky, setShowSticky] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadProduct() {
       try {
         setLoading(true);
-        // Fetch from API
         const response = await fetch(`/api/products?q=${params.slug}`);
         const res = await response.json();
         if (res.success && res.products && res.products.length > 0) {
@@ -68,7 +41,6 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               const relResponse = await fetch(`/api/products?category=${catSlug}&limit=5`);
               const relRes = await relResponse.json();
               if (relRes.success) {
-                // exclude current product
                 setRelatedProducts(relRes.products.filter((p: any) => p.id !== match.id).slice(0, 3));
               }
             }
@@ -86,6 +58,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     }
     loadProduct();
   }, [params.slug]);
+
+  // Scroll listener for sticky purchase bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 450) {
+        setShowSticky(true);
+      } else {
+        setShowSticky(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (loading) {
     return (
@@ -135,7 +120,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] text-slate-200 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-6xl mx-auto space-y-12 pb-24">
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 text-xs text-slate-500 font-bold uppercase tracking-widest">
           <Link href="/" className="hover:text-blue-400 transition">Home</Link>
@@ -194,6 +179,15 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                   {formatPrice(product.price)}
                 </span>
               )}
+            </div>
+
+            {/* Flash Sale Bar */}
+            <div className="glass border border-rose-950/30 bg-rose-950/5 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-2 text-xs">
+                <Flame className="w-4 h-4 text-rose-500 animate-pulse fill-current" />
+                <span className="text-rose-400 font-bold uppercase tracking-wider">Flash Deal Special Discount!</span>
+              </div>
+              <Countdown endTime="2027-12-31 23:59:59" />
             </div>
 
             <p className="text-slate-400 text-sm leading-relaxed">{product.description}</p>
@@ -275,21 +269,77 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               </button>
             </div>
 
-            {/* Shipping & Policies summary */}
-            <div className="border-t border-slate-900/60 pt-6 space-y-3.5 text-xs text-slate-400">
-              <div className="flex items-center space-x-2.5">
-                <Truck className="w-4 h-4 text-blue-400" />
-                <span>Free express shipping on order values over $150.</span>
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 border-t border-slate-900/60 pt-6 text-center">
+              <div className="glass border border-slate-850 p-3 rounded-2xl space-y-1">
+                <Truck className="w-4 h-4 mx-auto text-blue-400" />
+                <span className="text-[10px] text-slate-400 font-extrabold block">Express Delivery</span>
               </div>
-              <div className="flex items-center space-x-2.5">
-                <RefreshCcw className="w-4 h-4 text-blue-400" />
-                <span>Unopened items returned within 30 days are fully refunded.</span>
+              <div className="glass border border-slate-850 p-3 rounded-2xl space-y-1">
+                <ShieldCheck className="w-4 h-4 mx-auto text-emerald-400" />
+                <span className="text-[10px] text-slate-400 font-extrabold block">Secure checkout</span>
               </div>
-              <div className="flex items-center space-x-2.5">
-                <ShieldCheck className="w-4 h-4 text-blue-400" />
-                <span>Includes 1 year comprehensive manufacturer warranty.</span>
+              <div className="glass border border-slate-850 p-3 rounded-2xl space-y-1">
+                <RefreshCcw className="w-4 h-4 mx-auto text-purple-400" />
+                <span className="text-[10px] text-slate-400 font-extrabold block">30-day refunds</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Promo Coupon banner block */}
+        <div className="glass border border-blue-900/35 bg-blue-950/5 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-lg shadow-black/10">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-blue-500/15 border border-blue-500/20 rounded-2xl text-blue-400">
+              <Gift className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Claim your welcome discount code: <span className="text-blue-400 font-black">WELCOME10</span></h3>
+              <p className="text-xs text-slate-400">Copy and paste this code at checkout to claim your promotional discount.</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText('WELCOME10');
+              alert('Coupon code copied to clipboard!');
+            }}
+            className="flex items-center justify-center space-x-2 py-2.5 px-5 bg-blue-605 hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition border border-blue-800"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span>Copy Code</span>
+          </button>
+        </div>
+
+        {/* Specs Comparison Table */}
+        <div className="border-t border-slate-900/60 pt-12 space-y-6">
+          <h2 className="text-2xl font-bold font-display text-white tracking-tight">Technical Specifications</h2>
+          <div className="glass border border-slate-800/40 rounded-3xl overflow-hidden shadow-lg shadow-black/10">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-850 bg-[#0c0f17]/50 text-slate-400 uppercase font-extrabold tracking-wider">
+                  <th className="py-4 px-6">Specification</th>
+                  <th className="py-4 px-6">{product.name} Details</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900/60 text-slate-350">
+                <tr>
+                  <td className="py-4 px-6 font-bold text-white">Model Sku</td>
+                  <td className="py-4 px-6">{selectedVariant?.sku || product.sku}</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-6 font-bold text-white">Manufacturer Warranty</td>
+                  <td className="py-4 px-6">1 Year Comprehensive Warranty</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-6 font-bold text-white">Certifications</td>
+                  <td className="py-4 px-6">CE, RoHS Compliant</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-6 font-bold text-white">Shipping Carrier</td>
+                  <td className="py-4 px-6">DHL Express, FedEx Priority</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -356,8 +406,28 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </div>
         </div>
       </div>
+
+      {/* Sticky Purchase Bar */}
+      {showSticky && product && selectedVariant && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#090b11]/95 backdrop-blur border-t border-slate-800/80 py-4 px-6 z-40 flex items-center justify-between shadow-2xl animate-in slide-in-from-bottom duration-300">
+          <div className="flex items-center space-x-4">
+            <img src={selectedImage} alt={product.name} className="w-10 h-10 object-cover rounded-lg border border-slate-800" />
+            <div>
+              <h4 className="font-bold text-white text-xs sm:text-sm line-clamp-1">{product.name}</h4>
+              <p className="text-[10px] text-slate-500 font-extrabold">{selectedVariant.sku}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="font-extrabold text-white text-sm sm:text-base">{formatPrice(product.salePrice || product.price)}</span>
+            <button 
+              onClick={handleAddToCart}
+              className="py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-md shadow-blue-900/20"
+            >
+              Add To Cart
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  );
-}
   );
 }
