@@ -74,9 +74,22 @@ export default function AdminDashboard() {
     } catch {}
   };
 
+  const [bannersList, setBannersList] = useState<any[]>([]);
+  const [bannersLoading, setBannersLoading] = useState(false);
+  const fetchBanners = async () => {
+    setBannersLoading(true);
+    try {
+      const res = await fetch('/api/admin/banners');
+      const data = await res.json();
+      if (data.success) setBannersList(data.banners);
+    } catch {}
+    finally { setBannersLoading(false); }
+  };
+
   useEffect(() => { fetchProducts(); }, []);
   useEffect(() => { fetchCategories(); }, []);
   useEffect(() => { fetchBrands(); }, []);
+  useEffect(() => { fetchBanners(); }, []);
 
   const [ordersList] = useState([
     { id: 'ORD-1049', customer: 'Sarah Jenkins', total: 1099.00, status: 'CONFIRMED', gateway: 'STRIPE', date: '5 mins ago' },
@@ -384,6 +397,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<any>(null);
+  const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', imageUrl: '', linkUrl: '', status: 'ACTIVE' });
+  const [bannerFormSaving, setBannerFormSaving] = useState(false);
+
+  const openAddBanner = () => {
+    setEditingBanner(null);
+    setBannerForm({ title: '', subtitle: '', imageUrl: '', linkUrl: '', status: 'ACTIVE' });
+    setShowBannerModal(true);
+  };
+
+  const openEditBanner = (b: any) => {
+    setEditingBanner(b);
+    setBannerForm({ title: b.title, subtitle: b.subtitle || '', imageUrl: b.imageUrl, linkUrl: b.linkUrl || '', status: b.status });
+    setShowBannerModal(true);
+  };
+
+  const saveBanner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBannerFormSaving(true);
+    try {
+      const url = editingBanner ? `/api/admin/banners/${editingBanner.id}` : '/api/admin/banners';
+      const method = editingBanner ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bannerForm) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(editingBanner ? 'Banner updated!' : 'Banner created!');
+      setShowBannerModal(false);
+      fetchBanners();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save banner', 'error');
+    } finally {
+      setBannerFormSaving(false);
+    }
+  };
+
+  const deleteBanner = async (id: string) => {
+    if (!confirm('Remove this banner?')) return;
+    try {
+      const res = await fetch(`/api/admin/banners/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Banner deleted.');
+      fetchBanners();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete banner', 'error');
+    }
+  };
+
   // Brands CRUD handlers
   const openAddBrand = () => {
     setEditingBrand(null);
@@ -464,32 +526,31 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] text-slate-100 flex">
+    <div className="min-h-screen bg-gray-50 text-black flex font-sans">
       {/* Global API Toast */}
       {apiToast && (
-        <div className={`fixed top-5 right-5 z-[100] px-5 py-3 rounded-2xl text-xs font-bold shadow-2xl border transition-all ${
+        <div className={`fixed top-5 right-5 z-[100] px-5 py-3 rounded-xl text-xs font-bold shadow-lg border transition-all ${
           apiToast.type === 'success'
-            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-            : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+            ? 'bg-emerald-550 border-emerald-200 text-emerald-800'
+            : 'bg-rose-50 border-rose-200 text-rose-800'
         }`}>
           {apiToast.type === 'success' ? '✓' : '✗'} {apiToast.msg}
         </div>
       )}
       
       {/* 1. COLLAPSIBLE ACCORDION SIDEBAR */}
-      <aside className="w-64 bg-[#06080e]/95 border-r border-slate-900/60 p-5 flex flex-col justify-between shrink-0 hidden md:flex">
+      <aside className="w-64 bg-white border-r border-gray-200 p-5 flex flex-col justify-between shrink-0 hidden md:flex">
         <div className="space-y-6">
           <div className="flex items-center space-x-2 px-3">
-            <Sparkles className="w-5 h-5 text-blue-400" />
-            <span className="text-base font-black font-display tracking-tight text-white uppercase">Shopora Admin</span>
+            <span className="text-base font-black tracking-tight text-black uppercase">shopora Admin</span>
           </div>
 
           <nav className="space-y-4">
             {/* Dashboard Link */}
             <button 
               onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center space-x-3 py-2 px-3 text-xs font-bold rounded-xl transition ${
-                activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-900/50'
+              className={`w-full flex items-center space-x-3 py-2 px-3 text-xs font-bold rounded-lg transition ${
+                activeTab === 'dashboard' ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-100'
               }`}
             >
               <Activity className="w-4 h-4" />
@@ -638,6 +699,7 @@ export default function AdminDashboard() {
               {openGroups.content && (
                 <div className="pl-3 space-y-1">
                   {[
+                    { label: 'Banners Carousel', tab: 'banners', icon: ImageIcon },
                     { label: 'FAQ Accordions', tab: 'faqs', icon: Info },
                     { label: 'Announcements', tab: 'announcements', icon: Bell }
                   ].map((sub, idx) => (
@@ -1705,6 +1767,70 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* TAB 26: BANNERS CAROUSEL */}
+          {activeTab === 'banners' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black tracking-tight">Homepage Banners</h2>
+                  <p className="text-xs text-gray-500">Configure promotional slides for storefront marketing campaigns.</p>
+                </div>
+                <button
+                  onClick={openAddBanner}
+                  className="flex items-center space-x-2 py-2 px-4 bg-black hover:bg-gray-900 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Slide</span>
+                </button>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                {bannersLoading ? (
+                  <div className="p-8 text-center text-xs text-gray-500">Loading banners...</div>
+                ) : bannersList.length === 0 ? (
+                  <div className="p-12 text-center text-xs text-gray-500">No banners configured yet. Click "Create Slide" to get started.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="text-gray-500 border-b border-gray-250 bg-gray-50 font-bold uppercase tracking-wider">
+                          <th className="py-3 px-4">Preview</th>
+                          <th className="py-3 px-4">Title & Details</th>
+                          <th className="py-3 px-4">Target Link</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-150">
+                        {bannersList.map(b => (
+                          <tr key={b.id} className="hover:bg-gray-50 text-gray-700 font-semibold">
+                            <td className="py-3 px-4">
+                              <img src={b.imageUrl} alt={b.title} className="w-16 h-10 object-cover rounded-lg border border-gray-250" />
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-black text-sm">{b.title}</div>
+                              <div className="text-[10px] text-gray-500">{b.subtitle}</div>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[10px]">{b.linkUrl || '/products'}</td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                b.status === 'ACTIVE' ? 'bg-emerald-550 border border-emerald-100' : 'bg-gray-100 text-gray-600 border border-gray-200'
+                              }`}>{b.status}</span>
+                            </td>
+                            <td className="py-3 px-4 text-right space-x-2.5">
+                              <button onClick={() => openEditBanner(b)} className="text-black hover:underline">Edit</button>
+                              <button onClick={() => deleteBanner(b.id)} className="text-red-500 hover:underline">Delete</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* TAB 21: ANNOUNCEMENTS */}
           {activeTab === 'announcements' && (
             <div className="space-y-6">
@@ -2163,6 +2289,62 @@ export default function AdminDashboard() {
                 className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
                 {brandFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
                 <span>{brandFormSaving ? 'Saving...' : editingBrand ? 'Save Changes' : 'Register Brand'}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Banner Add/Edit Modal */}
+      {showBannerModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl">
+            <button onClick={() => setShowBannerModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+            <div>
+              <h3 className="text-xl font-black font-display text-white">{editingBanner ? 'Edit Banner Slide' : 'Create Banner Slide'}</h3>
+              <p className="text-[11px] text-slate-500 mt-0.5">Upload or specify a banner image and configure links for campaigns.</p>
+            </div>
+
+            <form onSubmit={saveBanner} className="space-y-4 text-xs font-semibold text-slate-400">
+              <div className="space-y-1">
+                <label className="block">Banner Title *</label>
+                <input type="text" required value={bannerForm.title}
+                  onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. Introducing iPhone 15 Pro" />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Subtitle / Description</label>
+                <input type="text" value={bannerForm.subtitle}
+                  onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. Titanium design, ultimate A17 Pro chip." />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Banner Image URL *</label>
+                <input type="text" required value={bannerForm.imageUrl}
+                  onChange={(e) => setBannerForm({ ...bannerForm, imageUrl: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. https://images.unsplash.com/..." />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Link Destination URL</label>
+                <input type="text" value={bannerForm.linkUrl}
+                  onChange={(e) => setBannerForm({ ...bannerForm, linkUrl: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. /products/iphone-15-pro-max" />
+              </div>
+              <div className="space-y-1">
+                <label className="block">Publication Status</label>
+                <select value={bannerForm.status} onChange={(e) => setBannerForm({ ...bannerForm, status: e.target.value })}
+                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
+                  <option value="ACTIVE">ACTIVE — visible on storefront hero carousel</option>
+                  <option value="INACTIVE">INACTIVE — hidden from users</option>
+                </select>
+              </div>
+              <button type="submit" disabled={bannerFormSaving}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                {bannerFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                <span>{bannerFormSaving ? 'Saving...' : editingBanner ? 'Save Changes' : 'Create Banner'}</span>
               </button>
             </form>
           </div>

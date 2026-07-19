@@ -1,11 +1,26 @@
 import { NextResponse } from 'next/server';
 import { ProductService } from '../../../core/services/ProductService';
+import { db } from '../../../db';
+import { banners, categories } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
 
 const productService = new ProductService();
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    const includeBanners = searchParams.get('banners') === 'true';
+    if (includeBanners) {
+      const list = await db.select().from(banners).where(eq(banners.status, 'ACTIVE'));
+      return NextResponse.json({ success: true, banners: list });
+    }
+
+    const includeCategories = searchParams.get('categories') === 'true';
+    if (includeCategories) {
+      const list = await db.select().from(categories).where(eq(categories.visible, true));
+      return NextResponse.json({ success: true, categories: list });
+    }
+
     const categorySlug = searchParams.get('category') || undefined;
     const brandSlug = searchParams.get('brand') || undefined;
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;

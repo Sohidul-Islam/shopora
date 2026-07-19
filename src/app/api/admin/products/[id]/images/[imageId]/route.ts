@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../../../../db';
-import { productImages } from '../../../../../../db/schema';
+import { db } from '../../../../../../../db';
+import { productImages } from '../../../../../../../db/schema';
 import { eq } from 'drizzle-orm';
 import { unlink } from 'fs/promises';
 import { join } from 'path';

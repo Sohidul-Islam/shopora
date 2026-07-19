@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../../../db';
-import { productImages } from '../../../../../db/schema';
+import { db } from '../../../../../../db';
+import { productImages } from '../../../../../../db/schema';
 import { eq, asc } from 'drizzle-orm';
 
 // GET /api/admin/products/[id]/images — list all images for a product
