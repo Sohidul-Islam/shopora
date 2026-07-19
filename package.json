@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "node scripts/seed.js"
+    "db:seed": "node --env-file=.env scripts/seed.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",
