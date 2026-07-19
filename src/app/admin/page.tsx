@@ -526,7 +526,7 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 text-black flex font-sans">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 flex font-sans transition-colors duration-300">
       {/* Global API Toast */}
       {apiToast && (
         <div className={`fixed top-5 right-5 z-[100] px-5 py-3 rounded-xl text-xs font-bold shadow-lg border transition-all ${
@@ -539,10 +539,10 @@ export default function AdminDashboard() {
       )}
       
       {/* 1. COLLAPSIBLE ACCORDION SIDEBAR */}
-      <aside className="w-64 bg-white border-r border-gray-200 p-5 flex flex-col justify-between shrink-0 hidden md:flex">
+      <aside className="w-64 bg-white dark:bg-[#0c0d15] border-r border-slate-200 dark:border-white/5 p-5 flex flex-col justify-between shrink-0 hidden md:flex transition-colors duration-300">
         <div className="space-y-6">
           <div className="flex items-center space-x-2 px-3">
-            <span className="text-base font-black tracking-tight text-black uppercase">shopora Admin</span>
+            <span className="text-base font-black tracking-tight text-slate-900 dark:text-white uppercase">shopora Admin</span>
           </div>
 
           <nav className="space-y-4">
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
             <button 
               onClick={() => setActiveTab('dashboard')}
               className={`w-full flex items-center space-x-3 py-2 px-3 text-xs font-bold rounded-lg transition ${
-                activeTab === 'dashboard' ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-100'
+                activeTab === 'dashboard' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
               }`}
             >
               <Activity className="w-4 h-4" />
@@ -561,7 +561,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('sales')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Sales Operations</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.sales ? 'rotate-180' : ''}`} />
@@ -578,7 +578,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -593,7 +593,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('catalog')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Catalog System</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.catalog ? 'rotate-180' : ''}`} />
@@ -612,7 +612,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -627,7 +627,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('customers')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Customers</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.customers ? 'rotate-180' : ''}`} />
@@ -644,7 +644,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -659,7 +659,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('marketing')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Marketing & SEO</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.marketing ? 'rotate-180' : ''}`} />
@@ -676,7 +676,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -691,7 +691,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('content')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Content CMS</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.content ? 'rotate-180' : ''}`} />
@@ -707,7 +707,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -722,7 +722,7 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('system')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 uppercase font-black tracking-widest hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>System Controls</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.system ? 'rotate-180' : ''}`} />
@@ -739,7 +739,7 @@ export default function AdminDashboard() {
                       key={idx}
                       onClick={() => setActiveTab(sub.tab)}
                       className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-blue-400 bg-blue-500/5' : 'text-slate-400 hover:text-white hover:bg-slate-900/40'
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -752,10 +752,10 @@ export default function AdminDashboard() {
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-slate-900/60 flex items-center space-x-3">
+        <div className="pt-6 border-t border-slate-200 dark:border-slate-900/60 flex items-center space-x-3">
           <div className="w-8 h-8 rounded-full bg-blue-650 flex items-center justify-center text-xs font-black text-white">AD</div>
           <div>
-            <h4 className="text-xs font-bold text-white leading-none">Admin User</h4>
+            <h4 className="text-xs font-bold text-slate-855 dark:text-white leading-none">Admin User</h4>
             <span className="text-[10px] text-slate-500">Super Administrator</span>
           </div>
         </div>
@@ -765,11 +765,11 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Top Header */}
-        <header className="glass border-b border-slate-900/60 py-4 px-6 sm:px-10 flex items-center justify-between sticky top-0 z-30">
+        <header className="glass border-b border-slate-200 dark:border-slate-900/60 py-4 px-6 sm:px-10 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center space-x-4 flex-1">
             <button 
               onClick={() => setPaletteOpen(true)}
-              className="flex items-center space-x-2.5 bg-[#0a0c14] border border-slate-800 rounded-2xl py-2 px-4 max-w-md w-full text-slate-500 hover:text-slate-400 text-xs transition"
+              className="flex items-center space-x-2.5 bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl py-2 px-4 max-w-md w-full text-slate-500 hover:text-slate-400 text-xs transition"
             >
               <Search className="w-3.5 h-3.5" />
               <span>Global Search... (Press ⌘+K)</span>
@@ -791,8 +791,8 @@ export default function AdminDashboard() {
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Business Health Overview</h2>
-                <p className="text-xs text-slate-400">Real-time store metrics, top-selling products, and system conversion rates.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Business Health Overview</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Real-time store metrics, top-selling products, and system conversion rates.</p>
               </div>
 
               {/* Metrics Grid */}
@@ -806,9 +806,9 @@ export default function AdminDashboard() {
                   <div key={idx} className="glass rounded-2xl p-5 border border-slate-850 flex items-center justify-between shadow-lg shadow-black/10">
                     <div className="space-y-1">
                       <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">{m.name}</span>
-                      <span className="text-2xl font-bold block text-white font-display">{m.value}</span>
+                      <span className="text-2xl font-bold block text-slate-900 dark:text-white font-display">{m.value}</span>
                     </div>
-                    <div className={`w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-800 ${m.color}`}>
+                    <div className={`w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center border border-slate-200 dark:border-slate-800 ${m.color}`}>
                       <m.icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -818,14 +818,14 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Orders Table */}
                 <div className="lg:col-span-2 glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                    <h3 className="font-bold text-white text-base font-display">Recent Order Management</h3>
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900 pb-3">
+                    <h3 className="font-bold text-slate-855 dark:text-white text-base font-display">Recent Order Management</h3>
                     <button onClick={() => setActiveTab('orders')} className="text-xs text-blue-400 font-bold hover:underline">View All Orders &rarr;</button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                        <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                           <th className="py-2.5">Order ID</th>
                           <th className="py-2.5">Customer</th>
                           <th className="py-2.5">Gateway</th>
@@ -833,9 +833,9 @@ export default function AdminDashboard() {
                           <th className="py-2.5">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-900/60">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                         {ordersList.map(o => (
-                          <tr key={o.id} className="text-slate-300 font-semibold">
+                          <tr key={o.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                             <td className="py-3 font-mono text-blue-400">{o.id}</td>
                             <td className="py-3">{o.customer}</td>
                             <td className="py-3">{o.gateway}</td>
@@ -854,15 +854,15 @@ export default function AdminDashboard() {
 
                 {/* System Low Stock widget */}
                 <div className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 flex items-center space-x-2">
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
                     <AlertTriangle className="w-4 h-4 text-amber-500" />
                     <span>Low Stock Inventory</span>
                   </h3>
                   <div className="space-y-3">
                     {productsList.filter(p => p.stock < 6).map(p => (
-                      <div key={p.id} className="flex justify-between items-center p-3 bg-slate-900/40 border border-slate-850 rounded-2xl text-xs">
+                      <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                         <div>
-                          <h4 className="font-bold text-white truncate max-w-[150px]">{p.name}</h4>
+                          <h4 className="font-bold text-slate-855 dark:text-white truncate max-w-[150px]">{p.name}</h4>
                           <span className="text-[10px] text-slate-500 font-mono">{p.sku}</span>
                         </div>
                         <span className="px-2 py-0.5 rounded font-black bg-rose-500/10 text-rose-400">{p.stock} left</span>
@@ -878,15 +878,15 @@ export default function AdminDashboard() {
           {activeTab === 'orders' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Customer Orders Fulfillments</h2>
-                <p className="text-xs text-slate-400">Manage orders lifecycle, shipment statuses, and payment states.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Customer Orders Fulfillments</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Manage orders lifecycle, shipment statuses, and payment states.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Order ID</th>
                         <th className="py-3">Fulfillment Date</th>
                         <th className="py-3">Customer</th>
@@ -895,9 +895,9 @@ export default function AdminDashboard() {
                         <th className="py-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {ordersList.map(o => (
-                        <tr key={o.id} className="text-slate-300 font-semibold">
+                        <tr key={o.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-4 font-mono text-blue-400">{o.id}</td>
                           <td className="py-4">{o.date}</td>
                           <td className="py-4">{o.customer}</td>
@@ -921,15 +921,15 @@ export default function AdminDashboard() {
           {activeTab === 'returns' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Returns & Exchange Requests</h2>
-                <p className="text-xs text-slate-400">Monitor returned models, verify package condition, and trigger payment refunds.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Returns & Exchange Requests</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Monitor returned models, verify package condition, and trigger payment refunds.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Return ID</th>
                         <th className="py-3">Order ID</th>
                         <th className="py-3">Customer</th>
@@ -938,9 +938,9 @@ export default function AdminDashboard() {
                         <th className="py-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {returnsList.map(ret => (
-                        <tr key={ret.id} className="text-slate-300 font-semibold">
+                        <tr key={ret.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-4 font-mono text-blue-400">{ret.id}</td>
                           <td className="py-4 font-mono">{ret.orderId}</td>
                           <td className="py-4">{ret.customer}</td>
@@ -964,15 +964,15 @@ export default function AdminDashboard() {
           {activeTab === 'invoices' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Invoices Audit Logs</h2>
-                <p className="text-xs text-slate-400">Track paid invoices, tax breakdowns, and payment dates.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Invoices Audit Logs</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Track paid invoices, tax breakdowns, and payment dates.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Invoice ID</th>
                         <th className="py-3">Order ID</th>
                         <th className="py-3">Total Amount</th>
@@ -981,9 +981,9 @@ export default function AdminDashboard() {
                         <th className="py-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {invoicesList.map(inv => (
-                        <tr key={inv.id} className="text-slate-300 font-semibold">
+                        <tr key={inv.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-4 font-mono text-blue-400">{inv.id}</td>
                           <td className="py-4 font-mono">{inv.orderId}</td>
                           <td className="py-4">{formatPrice(inv.total)}</td>
@@ -1005,15 +1005,15 @@ export default function AdminDashboard() {
           {activeTab === 'payments' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Gateway Transactions Audit</h2>
-                <p className="text-xs text-slate-400">Trace transactional status, merchant adapter transfers, and raw responses.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Gateway Transactions Audit</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Trace transactional status, merchant adapter transfers, and raw responses.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Transaction ID</th>
                         <th className="py-3">Gateway</th>
                         <th className="py-3">Amount</th>
@@ -1021,9 +1021,9 @@ export default function AdminDashboard() {
                         <th className="py-3">Created</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {transactionsList.map(txn => (
-                        <tr key={txn.id} className="text-slate-300 font-semibold">
+                        <tr key={txn.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-4 font-mono text-blue-400">{txn.id}</td>
                           <td className="py-4">{txn.gateway}</td>
                           <td className="py-4">{formatPrice(txn.amount)}</td>
@@ -1047,12 +1047,12 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black font-display text-white">Product Catalogue</h2>
-                  <p className="text-xs text-slate-400">Manage all products — create, edit, publish, and delete with full field support.</p>
+                  <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Product Catalogue</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Manage all products — create, edit, publish, and delete with full field support.</p>
                 </div>
                 <button
                   onClick={openAddProduct}
-                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="flex items-center space-x-2 py-2 px-4 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add New Product</span>
@@ -1075,7 +1075,7 @@ export default function AdminDashboard() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                        <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                           <th className="py-2.5">SKU</th>
                           <th className="py-2.5">Name</th>
                           <th className="py-2.5">Brand</th>
@@ -1085,12 +1085,12 @@ export default function AdminDashboard() {
                           <th className="py-2.5 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-900/60">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                         {productsList.map(p => (
-                          <tr key={p.id} className="text-slate-300 font-semibold hover:bg-slate-900/30 transition">
+                          <tr key={p.id} className="text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-900/30 transition">
                             <td className="py-3 font-mono text-blue-400">{p.sku}</td>
                             <td className="py-3">
-                              <div className="font-bold text-white">{p.name}</div>
+                              <div className="font-bold text-slate-855 dark:text-white">{p.name}</div>
                               <div className="text-[10px] text-slate-500">/{p.slug}</div>
                             </td>
                             <td className="py-3">{p.brand?.name || '—'}</td>
@@ -1125,7 +1125,7 @@ export default function AdminDashboard() {
                             <td className="py-3 text-right space-x-2">
                               <button
                                 onClick={() => openEditProduct(p)}
-                                className="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"
+                                className="p-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-205 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition inline-flex"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
@@ -1151,12 +1151,12 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black font-display text-white">Categories & Sub-categories</h2>
-                  <p className="text-xs text-slate-400">Full hierarchy tree — create root categories and nest sub-categories under parents.</p>
+                  <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Categories & Sub-categories</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Full hierarchy tree — create root categories and nest sub-categories under parents.</p>
                 </div>
                 <button
                   onClick={openAddCategory}
-                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="flex items-center space-x-2 py-2 px-4 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Category</span>
@@ -1176,11 +1176,11 @@ export default function AdminDashboard() {
                         {roots.map(cat => (
                           <div key={cat.id}>
                             {/* Root category row */}
-                            <div className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-800 rounded-2xl text-xs">
+                            <div className="flex justify-between items-center p-4 bg-white dark:bg-slate-900/60 border border-black/5 dark:border-slate-800 rounded-2xl text-xs">
                               <div className="flex items-center space-x-3">
                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                 <div>
-                                  <h4 className="font-bold text-white">{cat.name}</h4>
+                                  <h4 className="font-bold text-slate-855 dark:text-white">{cat.name}</h4>
                                   <span className="text-[10px] text-slate-500">/category/{cat.slug} • Root</span>
                                   <div className="flex gap-2 mt-1">
                                     {cat.visible && <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-bold">VISIBLE</span>}
@@ -1189,13 +1189,13 @@ export default function AdminDashboard() {
                                 </div>
                               </div>
                               <div className="space-x-2">
-                                <button onClick={() => openEditCategory(cat)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => openEditCategory(cat)} className="p-1.5 bg-slate-105 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition inline-flex"><Edit className="w-3.5 h-3.5" /></button>
                                 <button onClick={() => deleteCategory(cat.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3.5 h-3.5" /></button>
                               </div>
                             </div>
                             {/* Sub-category children */}
                             {children.filter(c => c.parentId === cat.id).map(sub => (
-                              <div key={sub.id} className="flex justify-between items-center p-3 bg-slate-950/60 border border-slate-900 rounded-xl text-xs ml-6 mt-1.5">
+                              <div key={sub.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-950/60 border border-black/5 dark:border-slate-900 rounded-xl text-xs ml-6 mt-1.5">
                                 <div className="flex items-center space-x-3">
                                   <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
                                   <div>
@@ -1204,7 +1204,7 @@ export default function AdminDashboard() {
                                   </div>
                                 </div>
                                 <div className="space-x-2">
-                                  <button onClick={() => openEditCategory(sub)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
+                                  <button onClick={() => openEditCategory(sub)} className="p-1.5 bg-slate-105 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
                                   <button onClick={() => deleteCategory(sub.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3 h-3" /></button>
                                 </div>
                               </div>
@@ -1219,7 +1219,7 @@ export default function AdminDashboard() {
                               <span className="text-[10px] text-slate-600">/category/{orphan.slug}</span>
                             </div>
                             <div className="space-x-2">
-                              <button onClick={() => openEditCategory(orphan)} className="p-1.5 bg-slate-950 hover:bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
+                              <button onClick={() => openEditCategory(orphan)} className="p-1.5 bg-slate-105 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition inline-flex"><Edit className="w-3 h-3" /></button>
                               <button onClick={() => deleteCategory(orphan.id)} className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"><Trash className="w-3 h-3" /></button>
                             </div>
                           </div>
@@ -1237,12 +1237,12 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-black font-display text-white">Official Brand Partners</h2>
-                  <p className="text-xs text-slate-400">Manage partner brand registry profiles and storefront logo mappings.</p>
+                  <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Official Brand Partners</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Manage partner brand registry profiles and storefront logo mappings.</p>
                 </div>
                 <button 
                   onClick={openAddBrand}
-                  className="flex items-center space-x-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                  className="flex items-center space-x-2 py-2 px-4 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Register Brand</span>
@@ -1269,7 +1269,7 @@ export default function AdminDashboard() {
                         </button>
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold font-display text-white">{br.name}</h3>
+                    <h3 className="text-xl font-bold font-display text-slate-900 dark:text-white">{br.name}</h3>
                     <p className="text-xs text-slate-500">Slug: /brand/{br.slug}</p>
                   </div>
                 ))}
@@ -1281,19 +1281,19 @@ export default function AdminDashboard() {
           {activeTab === 'warehouses' && (
             <div className="space-y-8">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Warehouses & Depots</h2>
-                <p className="text-xs text-slate-400">Manage multiple fulfillment depot sites and stocks.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Warehouses & Depots</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Manage multiple fulfillment depot sites and stocks.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Depot list */}
                 <div className="lg:col-span-2 glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3">Active Warehouses</h3>
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-900 pb-3">Active Warehouses</h3>
                   <div className="space-y-3.5">
                     {warehousesList.map(wh => (
                       <div key={wh.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-2 text-xs">
                         <div className="flex justify-between items-center">
-                          <h4 className="font-bold text-white">{wh.name}</h4>
+                          <h4 className="font-bold text-slate-855 dark:text-white">{wh.name}</h4>
                           <span className="font-mono text-blue-400 font-bold">{wh.code}</span>
                         </div>
                         <p className="text-[10px] text-slate-400 flex items-center">
@@ -1307,7 +1307,7 @@ export default function AdminDashboard() {
 
                 {/* Restock adjuster */}
                 <div className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 flex items-center space-x-2">
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
                     <RefreshCw className="w-4 h-4 text-blue-400" />
                     <span>Adjust Stock Levels</span>
                   </h3>
@@ -1322,7 +1322,7 @@ export default function AdminDashboard() {
                       <select 
                         value={adjustSku}
                         onChange={(e) => setAdjustSku(e.target.value)}
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
                       >
                         {productsList.map(p => (
                           <option key={p.id} value={p.sku}>{p.sku} - {p.name}</option>
@@ -1337,13 +1337,13 @@ export default function AdminDashboard() {
                         required
                         value={adjustQty}
                         onChange={(e) => setAdjustQty(Number(e.target.value))}
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500" 
+                        className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500" 
                       />
                     </div>
 
                     <button 
                       type="submit"
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition"
+                      className="w-full py-3 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold rounded-xl transition"
                     >
                       Confirm Restock Level
                     </button>
@@ -1357,15 +1357,15 @@ export default function AdminDashboard() {
           {activeTab === 'transfers' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Stock Transfers</h2>
-                <p className="text-xs text-slate-400">Track depot-to-depot transit units and status updates.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Stock Transfers</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Track depot-to-depot transit units and status updates.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Transfer ID</th>
                         <th className="py-3">Source Depot</th>
                         <th className="py-3">Target Depot</th>
@@ -1374,9 +1374,9 @@ export default function AdminDashboard() {
                         <th className="py-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {transfersList.map(trf => (
-                        <tr key={trf.id} className="text-slate-300 font-semibold">
+                        <tr key={trf.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-4 font-mono text-blue-400">{trf.id}</td>
                           <td className="py-4">{trf.from}</td>
                           <td className="py-4">{trf.to}</td>
@@ -1398,24 +1398,24 @@ export default function AdminDashboard() {
           {activeTab === 'suppliers' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Suppliers Registry</h2>
-                <p className="text-xs text-slate-400">Audit product supply channels and logistics partners.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Suppliers Registry</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Audit product supply channels and logistics partners.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Supplier Name</th>
                         <th className="py-3">Contact Email</th>
                         <th className="py-3">Phone Line</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {suppliersList.map(sup => (
-                        <tr key={sup.id} className="text-slate-300 font-semibold">
-                          <td className="py-4 font-bold text-white">{sup.name}</td>
+                        <tr key={sup.id} className="text-slate-700 dark:text-slate-300 font-semibold">
+                          <td className="py-4 font-bold text-slate-855 dark:text-white">{sup.name}</td>
                           <td className="py-4">{sup.contact}</td>
                           <td className="py-4 font-mono">{sup.phone}</td>
                         </tr>
@@ -1431,15 +1431,15 @@ export default function AdminDashboard() {
           {activeTab === 'customers' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Customers Directory</h2>
-                <p className="text-xs text-slate-400">Audit reward point balances, registration timelines, and lifetime orders.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Customers Directory</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Audit reward point balances, registration timelines, and lifetime orders.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-2.5">ID</th>
                         <th className="py-2.5">Name</th>
                         <th className="py-2.5">Email</th>
@@ -1447,11 +1447,11 @@ export default function AdminDashboard() {
                         <th className="py-2.5">Reward Points</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {customersList.map(c => (
-                        <tr key={c.id} className="text-slate-300 font-semibold">
+                        <tr key={c.id} className="text-slate-700 dark:text-slate-300 font-semibold">
                           <td className="py-3 font-mono text-blue-400">{c.id}</td>
-                          <td className="py-3 font-bold text-white">{c.name}</td>
+                          <td className="py-3 font-bold text-slate-855 dark:text-white">{c.name}</td>
                           <td className="py-3">{c.email}</td>
                           <td className="py-3">{c.orders} orders</td>
                           <td className="py-3">
@@ -1470,8 +1470,8 @@ export default function AdminDashboard() {
           {activeTab === 'groups' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Customer Groups & Tiers</h2>
-                <p className="text-xs text-slate-400">Segment users by loyalty profiles and point tiers.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Customer Groups & Tiers</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Segment users by loyalty profiles and point tiers.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
@@ -1479,10 +1479,10 @@ export default function AdminDashboard() {
                   {customersList.map(c => (
                     <div key={c.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                       <div>
-                        <h4 className="font-bold text-white">{c.name}</h4>
+                        <h4 className="font-bold text-slate-855 dark:text-white">{c.name}</h4>
                         <span className="text-[10px] text-slate-500">{c.email}</span>
                       </div>
-                      <span className="px-3 py-1 rounded bg-[#0a0c14] border border-slate-800 text-[10px] font-black text-blue-400">{c.tier}</span>
+                      <span className="px-3 py-1 rounded bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-[10px] font-black text-blue-400">{c.tier}</span>
                     </div>
                   ))}
                 </div>
@@ -1494,15 +1494,15 @@ export default function AdminDashboard() {
           {activeTab === 'reviews' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Product Reviews</h2>
-                <p className="text-xs text-slate-400">Moderate product testimonials and approval ratings.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Product Reviews</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Moderate product testimonials and approval ratings.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Product</th>
                         <th className="py-3">Customer</th>
                         <th className="py-3">Rating</th>
@@ -1510,10 +1510,10 @@ export default function AdminDashboard() {
                         <th className="py-3">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {reviewsList.map(rev => (
-                        <tr key={rev.id} className="text-slate-300 font-semibold">
-                          <td className="py-4 font-bold text-white">{rev.product}</td>
+                        <tr key={rev.id} className="text-slate-700 dark:text-slate-300 font-semibold">
+                          <td className="py-4 font-bold text-slate-855 dark:text-white">{rev.product}</td>
                           <td className="py-4">{rev.customer}</td>
                           <td className="py-4 text-amber-400">
                             {[...Array(rev.rating)].map((_, i) => '★').join('')}
@@ -1537,8 +1537,8 @@ export default function AdminDashboard() {
           {activeTab === 'tickets' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Support Center Tickets</h2>
-                <p className="text-xs text-slate-400">Audit priority queues and resolve variant discrepancy tickets.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Support Center Tickets</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Audit priority queues and resolve variant discrepancy tickets.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
@@ -1550,7 +1550,7 @@ export default function AdminDashboard() {
                         t.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-400' : 'bg-blue-500/10 text-blue-400'
                       }`}>{t.priority}</span>
                     </div>
-                    <h4 className="font-bold text-white">{t.subject}</h4>
+                    <h4 className="font-bold text-slate-855 dark:text-white">{t.subject}</h4>
                     <div className="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-950 pt-2">
                       <span>By {t.customer}</span>
                       <span className="font-extrabold text-emerald-400">{t.status}</span>
@@ -1565,8 +1565,8 @@ export default function AdminDashboard() {
           {activeTab === 'campaigns' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Campaigns & Promo Coupons</h2>
-                <p className="text-xs text-slate-400">Activate seasonal sale banners and configure coupon codes.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Campaigns & Promo Coupons</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Activate seasonal sale banners and configure coupon codes.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
@@ -1574,12 +1574,12 @@ export default function AdminDashboard() {
                   {campaignsList.map(camp => (
                     <div key={camp.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                       <div>
-                        <h4 className="font-bold text-white">{camp.title}</h4>
+                        <h4 className="font-bold text-slate-855 dark:text-white">{camp.title}</h4>
                         <span className="text-[10px] text-slate-500">Slug: /campaign/{camp.slug}</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <span className="px-2.5 py-1 rounded bg-[#0a0c14] border border-slate-800 text-[10px] font-black text-blue-400 font-mono">{camp.code}</span>
-                        <span className="text-xs text-slate-400 font-bold">{camp.discount}</span>
+                        <span className="px-2.5 py-1 rounded bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-[10px] font-black text-blue-400 font-mono">{camp.code}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">{camp.discount}</span>
                       </div>
                     </div>
                   ))}
@@ -1592,14 +1592,14 @@ export default function AdminDashboard() {
           {activeTab === 'landing' && (
             <div className="space-y-8">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Custom Landing Pages Builder</h2>
-                <p className="text-xs text-slate-400">Publish product marketing templates without code deployments.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Custom Landing Pages Builder</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Publish product marketing templates without code deployments.</p>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Custom Page Builder */}
                 <div className="glass border border-slate-850 rounded-3xl p-6 space-y-4 shadow-lg shadow-black/10 h-fit">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 flex items-center space-x-2">
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
                     <LayoutGrid className="w-4 h-4 text-blue-400" />
                     <span>Landing Page Builder</span>
                   </h3>
@@ -1617,7 +1617,7 @@ export default function AdminDashboard() {
                         value={newPageTitle}
                         onChange={(e) => setNewPageTitle(e.target.value)}
                         placeholder="Black Friday Mega Sale" 
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white placeholder-slate-650 focus:outline-none focus:border-blue-500" 
+                        className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white placeholder-slate-650 focus:outline-none focus:border-blue-500" 
                       />
                     </div>
 
@@ -1629,13 +1629,13 @@ export default function AdminDashboard() {
                         value={newPageUrl}
                         onChange={(e) => setNewPageUrl(e.target.value)}
                         placeholder="black-friday-2026" 
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white placeholder-slate-650 focus:outline-none focus:border-blue-500" 
+                        className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white placeholder-slate-650 focus:outline-none focus:border-blue-500" 
                       />
                     </div>
 
                     <button 
                       type="submit" 
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition"
+                      className="w-full py-3 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold rounded-xl transition"
                     >
                       Publish Page Builder Block
                     </button>
@@ -1644,12 +1644,12 @@ export default function AdminDashboard() {
 
                 {/* Published pages list */}
                 <div className="lg:col-span-2 glass border border-slate-850 rounded-3xl p-6 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3">Active Campaign Landing Pages</h3>
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-900 pb-3">Active Campaign Landing Pages</h3>
                   <div className="space-y-3">
                     {landingPagesList.map(lp => (
                       <div key={lp.id} className="flex items-center justify-between p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                         <div>
-                          <h4 className="font-bold text-white">{lp.title}</h4>
+                          <h4 className="font-bold text-slate-855 dark:text-white">{lp.title}</h4>
                           <span className="text-[10px] text-slate-500 font-mono">/landing/{lp.url}</span>
                         </div>
 
@@ -1674,8 +1674,8 @@ export default function AdminDashboard() {
           {activeTab === 'blog' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Blog CMS Articles</h2>
-                <p className="text-xs text-slate-400">Publish press releases and product writeups.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Blog CMS Articles</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Publish press releases and product writeups.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-3xl">
@@ -1683,7 +1683,7 @@ export default function AdminDashboard() {
                   {blogPostsList.map(post => (
                     <div key={post.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                       <div>
-                        <h4 className="font-bold text-white">{post.title}</h4>
+                        <h4 className="font-bold text-slate-855 dark:text-white">{post.title}</h4>
                         <span className="text-[10px] text-slate-500">By {post.author} • {post.readTime}</span>
                       </div>
                       <Link href="/blog" className="text-xs text-blue-400 font-bold hover:underline">View Blog</Link>
@@ -1698,8 +1698,8 @@ export default function AdminDashboard() {
           {activeTab === 'seo' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">SEO & Metadata Manager</h2>
-                <p className="text-xs text-slate-400">Set global meta titles, description layouts, and indexation controls.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">SEO & Metadata Manager</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Set global meta titles, description layouts, and indexation controls.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-xl">
@@ -1721,7 +1721,7 @@ export default function AdminDashboard() {
                       type="text"
                       value={seoTitle}
                       onChange={(e) => setSeoTitle(e.target.value)}
-                      className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
+                      className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" 
                     />
                   </div>
 
@@ -1731,11 +1731,11 @@ export default function AdminDashboard() {
                       rows={3}
                       value={seoDesc}
                       onChange={(e) => setSeoDesc(e.target.value)}
-                      className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
-                  <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition">
+                  <button type="submit" className="w-full py-3 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold rounded-xl transition">
                     Save SEO Profiles
                   </button>
                 </form>
@@ -1747,15 +1747,15 @@ export default function AdminDashboard() {
           {activeTab === 'faqs' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">FAQ Accordions CMS</h2>
-                <p className="text-xs text-slate-400">Edit visible FAQs rendered on checkout and support pages.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">FAQ Accordions CMS</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Edit visible FAQs rendered on checkout and support pages.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
                 <div className="space-y-3">
                   {faqsList.map(faq => (
                     <div key={faq.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-2 text-xs">
-                      <h4 className="font-bold text-white flex items-center">
+                      <h4 className="font-bold text-slate-855 dark:text-white flex items-center">
                         <HelpCircle className="w-4 h-4 text-blue-450 mr-2" />
                         <span>{faq.question}</span>
                       </h4>
@@ -1784,7 +1784,7 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-white/5 rounded-2xl shadow-md overflow-hidden shadow-sm">
                 {bannersLoading ? (
                   <div className="p-8 text-center text-xs text-gray-500">Loading banners...</div>
                 ) : bannersList.length === 0 ? (
@@ -1835,15 +1835,15 @@ export default function AdminDashboard() {
           {activeTab === 'announcements' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Global Banner Announcements</h2>
-                <p className="text-xs text-slate-400">Set active announcements showing on the storefront header.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Global Banner Announcements</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Set active announcements showing on the storefront header.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
                 <div className="space-y-3">
                   {announcementsList.map(ann => (
                     <div key={ann.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
-                      <p className="font-bold text-white">{ann.text}</p>
+                      <p className="font-bold text-slate-855 dark:text-white">{ann.text}</p>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
                         ann.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-900 text-slate-500 border border-slate-800'
                       }`}>{ann.active ? 'ACTIVE' : 'INACTIVE'}</span>
@@ -1858,17 +1858,17 @@ export default function AdminDashboard() {
           {activeTab === 'analytics' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Sales & Marketing Analytics</h2>
-                <p className="text-xs text-slate-400">Generate transactional reports, export coupon logs, and monitor conversion growth.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Sales & Marketing Analytics</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Generate transactional reports, export coupon logs, and monitor conversion growth.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="glass border border-slate-850 rounded-3xl p-6 space-y-4 text-center shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-sm">Download Sales Report (CSV)</h3>
-                  <p className="text-xs text-slate-400">Generates a detailed spreadsheet of all confirmed payments and invoices.</p>
+                  <h3 className="font-bold text-slate-855 dark:text-white text-sm">Download Sales Report (CSV)</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Generates a detailed spreadsheet of all confirmed payments and invoices.</p>
                   <button 
                     onClick={() => alert('Downloading CSV sales report...')}
-                    className="mx-auto flex items-center space-x-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                    className="mx-auto flex items-center space-x-2 py-2.5 px-6 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                   >
                     <Download className="w-4 h-4" />
                     <span>Export CSV</span>
@@ -1876,11 +1876,11 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="glass border border-slate-850 rounded-3xl p-6 space-y-4 text-center shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-sm">Print Revenue Invoice Audit (PDF)</h3>
-                  <p className="text-xs text-slate-400">Generates a branded financial audit statement summarizing monthly revenues.</p>
+                  <h3 className="font-bold text-slate-855 dark:text-white text-sm">Print Revenue Invoice Audit (PDF)</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Generates a branded financial audit statement summarizing monthly revenues.</p>
                   <button 
                     onClick={() => alert('Generating PDF invoice summary...')}
-                    className="mx-auto flex items-center space-x-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
+                    className="mx-auto flex items-center space-x-2 py-2.5 px-6 bg-purple-650 dark:bg-blue-600 hover:bg-purple-500 dark:hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition"
                   >
                     <FileText className="w-4 h-4" />
                     <span>Print PDF Audit</span>
@@ -1894,12 +1894,12 @@ export default function AdminDashboard() {
           {activeTab === 'users' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Role-Based Access Control (RBAC)</h2>
-                <p className="text-xs text-slate-400">Set system parameters, inspect active admin directories, and trace actions.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Role-Based Access Control (RBAC)</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Set system parameters, inspect active admin directories, and trace actions.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-3xl">
-                <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 mb-4">Administrators & Permissions Mapping</h3>
+                <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-900 pb-3 mb-4">Administrators & Permissions Mapping</h3>
                 
                 <div className="space-y-3.5">
                   {[
@@ -1908,7 +1908,7 @@ export default function AdminDashboard() {
                   ].map((admin, idx) => (
                     <div key={idx} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
                       <div className="space-y-1">
-                        <h4 className="font-bold text-white flex items-center">
+                        <h4 className="font-bold text-slate-855 dark:text-white flex items-center">
                           <UserCheck className="w-4 h-4 text-blue-400 mr-2" />
                           <span>{admin.name}</span>
                         </h4>
@@ -1926,25 +1926,25 @@ export default function AdminDashboard() {
           {activeTab === 'logs' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">System Activity Logs</h2>
-                <p className="text-xs text-slate-400">Persistent audit trails capturing administrator write events.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">System Activity Logs</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Persistent audit trails capturing administrator write events.</p>
               </div>
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Administrator</th>
                         <th className="py-3">Operation Action</th>
                         <th className="py-3">IP Coordinates</th>
                         <th className="py-3">Timeline</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
                       {activityLogs.map(log => (
-                        <tr key={log.id} className="text-slate-300 font-semibold">
-                          <td className="py-4 font-bold text-white">{log.admin}</td>
+                        <tr key={log.id} className="text-slate-700 dark:text-slate-300 font-semibold">
+                          <td className="py-4 font-bold text-slate-855 dark:text-white">{log.admin}</td>
                           <td className="py-4">{log.action}</td>
                           <td className="py-4 font-mono">{log.ip}</td>
                           <td className="py-4">{log.date}</td>
@@ -1961,33 +1961,33 @@ export default function AdminDashboard() {
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-white">Store Localized Configuration</h2>
-                <p className="text-xs text-slate-400">Set payment gateways, localized currencies, API logs, and localization rules.</p>
+                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Store Localized Configuration</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Set payment gateways, localized currencies, API logs, and localization rules.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* General config */}
                 <div className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 flex items-center space-x-2">
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
                     <Settings className="w-4 h-4 text-blue-400" />
                     <span>General Store Configuration</span>
                   </h3>
                   
-                  <div className="space-y-3.5 text-xs text-slate-400 font-semibold">
+                  <div className="space-y-3.5 text-xs text-slate-500 dark:text-slate-400 font-semibold">
                     <div className="space-y-1">
                       <label className="block">Store Name</label>
-                      <input type="text" defaultValue="Shopora Enterprise" className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" />
+                      <input type="text" defaultValue="Shopora Enterprise" className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" />
                     </div>
                     <div className="space-y-1">
                       <label className="block">Support Contact Email</label>
-                      <input type="email" defaultValue="support@shopora.com" className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" />
+                      <input type="email" defaultValue="support@shopora.com" className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500" />
                     </div>
                   </div>
                 </div>
 
                 {/* API Key management */}
                 <div className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-white text-base font-display border-b border-slate-900 pb-3 flex items-center space-x-2">
+                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
                     <Key className="w-4 h-4 text-blue-400" />
                     <span>API Credentials Keys</span>
                   </h3>
@@ -2038,7 +2038,7 @@ export default function AdminDashboard() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Type page name (e.g. invoices, suppliers, logs, seo)..."
-              className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
             />
 
             <div className="max-h-[250px] overflow-y-auto space-y-1.5 pt-2">
@@ -2052,7 +2052,7 @@ export default function AdminDashboard() {
                   }}
                   className="w-full text-left p-3 hover:bg-slate-900/60 rounded-xl flex justify-between items-center transition text-xs"
                 >
-                  <span className="font-bold text-white">{lnk.title}</span>
+                  <span className="font-bold text-slate-855 dark:text-white">{lnk.title}</span>
                   <span className="text-[10px] bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-lg text-slate-400 uppercase font-black">{lnk.category}</span>
                 </button>
               ))}
@@ -2061,7 +2061,7 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="border-t border-slate-900 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
+            <div className="border-t border-slate-200 dark:border-slate-900 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
               <span>Use arrow keys to navigate (mocked)</span>
               <span>ESC to exit</span>
             </div>
@@ -2171,7 +2171,7 @@ export default function AdminDashboard() {
 
               {/* Product Image Gallery — shown when editing OR after product is created */}
               {editingProduct && (
-                <div className="pt-2 border-t border-slate-900">
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-900">
                   <ProductImageGallery
                     productId={editingProduct.id}
                     images={productImages}
