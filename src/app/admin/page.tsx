@@ -1291,7 +1291,7 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-900 pb-3">Active Warehouses</h3>
                   <div className="space-y-3.5">
                     {warehousesList.map(wh => (
-                      <div key={wh.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-2 text-xs">
+                      <div key={wh.id} className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl space-y-2 text-xs">
                         <div className="flex justify-between items-center">
                           <h4 className="font-bold text-slate-855 dark:text-white">{wh.name}</h4>
                           <span className="font-mono text-blue-400 font-bold">{wh.code}</span>
@@ -1477,7 +1477,7 @@ export default function AdminDashboard() {
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="space-y-3.5">
                   {customersList.map(c => (
-                    <div key={c.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                    <div key={c.id} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                       <div>
                         <h4 className="font-bold text-slate-855 dark:text-white">{c.name}</h4>
                         <span className="text-[10px] text-slate-500">{c.email}</span>
@@ -1543,7 +1543,7 @@ export default function AdminDashboard() {
 
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
                 {supportTickets.map(t => (
-                  <div key={t.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-2 text-xs">
+                  <div key={t.id} className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl space-y-2 text-xs">
                     <div className="flex justify-between items-start">
                       <span className="font-mono text-blue-400 font-bold">{t.id}</span>
                       <span className={`px-2 py-0.5 rounded text-[9px] font-black ${
@@ -1572,13 +1572,13 @@ export default function AdminDashboard() {
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
                 <div className="space-y-3">
                   {campaignsList.map(camp => (
-                    <div key={camp.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                    <div key={camp.id} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                       <div>
                         <h4 className="font-bold text-slate-855 dark:text-white">{camp.title}</h4>
                         <span className="text-[10px] text-slate-500">Slug: /campaign/{camp.slug}</span>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <span className="px-2.5 py-1 rounded bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-[10px] font-black text-blue-400 font-mono">{camp.code}</span>
+                        <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#0a0c14] border border-slate-205 dark:border-slate-800 text-purple-650 dark:text-blue-400 text-[10px] font-black font-mono">{camp.code}</span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">{camp.discount}</span>
                       </div>
                     </div>
@@ -1647,7 +1647,7 @@ export default function AdminDashboard() {
                   <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-900 pb-3">Active Campaign Landing Pages</h3>
                   <div className="space-y-3">
                     {landingPagesList.map(lp => (
-                      <div key={lp.id} className="flex items-center justify-between p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                      <div key={lp.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                         <div>
                           <h4 className="font-bold text-slate-855 dark:text-white">{lp.title}</h4>
                           <span className="text-[10px] text-slate-500 font-mono">/landing/{lp.url}</span>
@@ -1681,7 +1681,7 @@ export default function AdminDashboard() {
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-3xl">
                 <div className="space-y-3">
                   {blogPostsList.map(post => (
-                    <div key={post.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                    <div key={post.id} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                       <div>
                         <h4 className="font-bold text-slate-855 dark:text-white">{post.title}</h4>
                         <span className="text-[10px] text-slate-500">By {post.author} • {post.readTime}</span>
@@ -1754,7 +1754,7 @@ export default function AdminDashboard() {
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
                 <div className="space-y-3">
                   {faqsList.map(faq => (
-                    <div key={faq.id} className="p-4 bg-slate-900/60 border border-slate-850 rounded-2xl space-y-2 text-xs">
+                    <div key={faq.id} className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl space-y-2 text-xs">
                       <h4 className="font-bold text-slate-855 dark:text-white flex items-center">
                         <HelpCircle className="w-4 h-4 text-blue-450 mr-2" />
                         <span>{faq.question}</span>
@@ -1842,7 +1842,7 @@ export default function AdminDashboard() {
               <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-2xl">
                 <div className="space-y-3">
                   {announcementsList.map(ann => (
-                    <div key={ann.id} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                    <div key={ann.id} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                       <p className="font-bold text-slate-855 dark:text-white">{ann.text}</p>
                       <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
                         ann.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-900 text-slate-500 border border-slate-800'
@@ -1906,7 +1906,7 @@ export default function AdminDashboard() {
                     { name: 'Sohidul Islam', role: 'Super Administrator', status: 'ACTIVE', logs: 'Updated catalog Sony-XM5' },
                     { name: 'Jane Doe', role: 'Marketing Lead', status: 'ACTIVE', logs: 'Created campaign Summer Splash' }
                   ].map((admin, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-4 bg-slate-900/60 border border-slate-850 rounded-2xl text-xs">
+                    <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
                       <div className="space-y-1">
                         <h4 className="font-bold text-slate-855 dark:text-white flex items-center">
                           <UserCheck className="w-4 h-4 text-blue-400 mr-2" />
@@ -1992,7 +1992,7 @@ export default function AdminDashboard() {
                     <span>API Credentials Keys</span>
                   </h3>
                   <div className="space-y-4 text-xs font-semibold">
-                    <div className="p-3 bg-slate-900/60 border border-slate-850 rounded-xl flex justify-between items-center">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl flex justify-between items-center">
                       <div>
                         <span className="text-[10px] text-slate-500 block uppercase font-bold">Stripe Public Key</span>
                         <span className="text-white font-mono text-[10px]">pk_live_51P...</span>
@@ -2000,7 +2000,7 @@ export default function AdminDashboard() {
                       <button onClick={() => alert('API Key copied!')} className="text-blue-400 hover:text-white text-[10px] font-bold uppercase tracking-wider transition">Copy</button>
                     </div>
 
-                    <div className="p-3 bg-slate-900/60 border border-slate-850 rounded-xl flex justify-between items-center">
+                    <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-xl flex justify-between items-center">
                       <div>
                         <span className="text-[10px] text-slate-500 block uppercase font-bold">Redis Connection Host</span>
                         <span className="text-white font-mono text-[10px]">redis://shopora-redis:6379</span>
@@ -2050,7 +2050,7 @@ export default function AdminDashboard() {
                     setPaletteOpen(false);
                     setSearchQuery('');
                   }}
-                  className="w-full text-left p-3 hover:bg-slate-900/60 rounded-xl flex justify-between items-center transition text-xs"
+                  className="w-full text-left p-3 hover:bg-slate-100 dark:hover:bg-slate-900/60 rounded-xl flex justify-between items-center transition text-xs text-slate-800 dark:text-slate-200"
                 >
                   <span className="font-bold text-slate-855 dark:text-white">{lnk.title}</span>
                   <span className="text-[10px] bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-lg text-slate-400 uppercase font-black">{lnk.category}</span>
