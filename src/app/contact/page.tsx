@@ -18,49 +18,49 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] via-[#fafafa] to-purple-50/20 dark:from-[#05060b] dark:via-[#090b11] dark:to-[#040508] py-16 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-5xl mx-auto space-y-12">
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <h1 className="text-4xl font-black font-display text-white tracking-tight leading-none">Get In Touch</h1>
-          <p className="text-sm text-slate-400">Have questions about products, shipping, or custom pricing? Our support team is here to assist you 24/7.</p>
+          <h1 className="text-4xl font-black font-display text-slate-900 dark:text-white tracking-tight leading-none">Get In Touch</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Have questions about products, shipping, or custom pricing? Our support team is here to assist you 24/7.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
           {/* Info Details */}
           <div className="md:col-span-2 space-y-6">
-            <div className="glass border border-slate-800/40 rounded-3xl p-8 space-y-6 shadow-lg shadow-black/10">
-              <h2 className="text-xl font-bold font-display text-white border-b border-slate-900 pb-3">Contact Information</h2>
+            <div className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-slate-800/40 rounded-3xl p-8 space-y-6 shadow-xl dark:shadow-2xl">
+              <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-900 pb-3">Contact Information</h2>
               
               <div className="space-y-4">
                 <div className="flex items-center space-x-3.5">
-                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl">
+                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase font-black block">Email Support</span>
-                    <a href="mailto:support@shopora.com" className="text-sm text-slate-350 hover:text-white transition font-semibold">support@shopora.com</a>
+                    <a href="mailto:support@shopora.com" className="text-sm text-slate-700 dark:text-slate-350 hover:text-purple-600 dark:hover:text-white transition font-semibold">support@shopora.com</a>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3.5">
-                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl">
+                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase font-black block">Phone Hotline</span>
-                    <span className="text-sm text-slate-350 font-semibold">+1 (800) 555-0199</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-350 font-semibold">+1 (800) 555-0199</span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-3.5">
-                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl">
+                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase font-black block">Business Hours</span>
-                    <span className="text-sm text-slate-355 text-slate-350 font-semibold">Mon - Fri: 9:00 AM - 6:00 PM</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-350 font-semibold">Mon - Fri: 9:00 AM - 6:00 PM</span>
                   </div>
                 </div>
               </div>
@@ -69,52 +69,52 @@ export default function ContactPage() {
 
           {/* Interactive Form */}
           <div className="md:col-span-3">
-            <div className="glass border border-slate-800/40 rounded-3xl p-8 sm:p-10 shadow-lg shadow-black/10">
-              <h2 className="text-xl font-bold font-display text-white border-b border-slate-900 pb-3 mb-6">Send Us a Message</h2>
+            <div className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-slate-800/40 rounded-3xl p-8 sm:p-10 shadow-xl dark:shadow-2xl">
+              <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-900 pb-3 mb-6">Send Us a Message</h2>
               
               {submitted ? (
                 <div className="py-12 text-center space-y-4">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                  <h3 className="text-lg font-bold text-white font-display">Message Sent Successfully!</h3>
-                  <p className="text-xs text-slate-400">Thank you for reaching out. We will respond within 24 hours.</p>
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 dark:text-emerald-400 mx-auto animate-bounce" />
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white font-display">Message Sent Successfully!</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Thank you for reaching out. We will respond within 24 hours.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Full Name</label>
+                      <label className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-wider">Full Name</label>
                       <input 
                         type="text" 
                         required
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
                         placeholder="John Doe" 
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
+                        className="w-full bg-slate-50 dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Email Address</label>
+                      <label className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-wider">Email Address</label>
                       <input 
                         type="email" 
                         required
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
                         placeholder="john@example.com" 
-                        className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
+                        className="w-full bg-slate-50 dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Your Message</label>
+                    <label className="text-[10px] uppercase font-black text-slate-500 dark:text-slate-400 tracking-wider">Your Message</label>
                     <textarea 
                       required
                       rows={5}
                       value={form.message}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}
                       placeholder="Type your questions or comments here..." 
-                      className="w-full bg-[#0a0c14] border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50 dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-650 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
 

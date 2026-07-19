@@ -54,6 +54,10 @@ interface ShopState {
   // Checkout Status / Temporary Address Selection
   selectedAddressId: string | null;
   setSelectedAddressId: (addressId: string | null) => void;
+
+  // Theme State
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 export const useStore = create<ShopState>()(
@@ -110,6 +114,22 @@ export const useStore = create<ShopState>()(
 
       selectedAddressId: null,
       setSelectedAddressId: (addressId) => set({ selectedAddressId: addressId }),
+
+      theme: 'dark',
+      toggleTheme: () => {
+        const nextTheme = get().theme === 'dark' ? 'light' : 'dark';
+        set({ theme: nextTheme });
+        if (typeof window !== 'undefined') {
+          const root = window.document.documentElement;
+          if (nextTheme === 'dark') {
+            root.classList.add('dark');
+            root.classList.remove('light');
+          } else {
+            root.classList.add('light');
+            root.classList.remove('dark');
+          }
+        }
+      },
     }),
     {
       name: 'shopora-storage', // localstorage key
@@ -120,6 +140,7 @@ export const useStore = create<ShopState>()(
         appliedCoupon: state.appliedCoupon,
         wishlist: state.wishlist,
         selectedAddressId: state.selectedAddressId,
+        theme: state.theme,
       }),
     }
   )

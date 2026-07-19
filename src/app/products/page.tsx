@@ -116,16 +116,16 @@ function ProductListContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans py-8 px-6 sm:px-12 lg:px-24">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 font-sans py-8 px-6 sm:px-12 lg:px-24 transition-colors duration-300">
       {/* Breadcrumbs */}
-      <div className="flex items-center space-x-2 text-xs text-gray-400 mb-8">
-        <Link href="/" className="hover:text-black">Home</Link>
+      <div className="flex items-center space-x-2 text-xs text-slate-400 mb-8">
+        <Link href="/" className="hover:text-purple-650 dark:hover:text-white transition">Home</Link>
         <ChevronRight className="w-3 h-3" />
-        <Link href="/products" className="hover:text-black">Catalog</Link>
+        <Link href="/products" className="hover:text-purple-650 dark:hover:text-white transition">Catalog</Link>
         {categoryFilter && (
           <>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-black capitalize font-medium">{categoryFilter}</span>
+            <span className="text-slate-800 dark:text-white capitalize font-medium">{categoryFilter}</span>
           </>
         )}
       </div>
@@ -134,10 +134,10 @@ function ProductListContent() {
         {/* Sidebar Filters */}
         <div className="lg:col-span-1 space-y-6">
           {/* Brand Filter */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('brand')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Brand</span>
               {openAccordions.brand ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -146,26 +146,26 @@ function ProductListContent() {
             {openAccordions.brand && (
               <div className="mt-3 space-y-3">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 dark:text-gray-400 absolute left-3 top-3" />
                   <input
                     type="text"
                     placeholder="Search brand"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-black"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   />
                 </div>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {brands.map((br) => (
-                    <label key={br.slug} className="flex items-center justify-between text-xs font-semibold text-gray-600 cursor-pointer">
+                    <label key={br.slug} className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
                       <div className="flex items-center space-x-2.5">
                         <input
                           type="checkbox"
                           checked={brandFilter === br.slug}
                           onChange={() => updateFilters({ brand: brandFilter === br.slug ? '' : br.slug })}
-                          className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                          className="w-4 h-4 rounded border-slate-300 dark:border-white/10 text-purple-650 dark:text-purple-600 focus:ring-purple-650 dark:focus:ring-purple-600 bg-white dark:bg-[#0a0c14] cursor-pointer"
                         />
                         <span>{br.name}</span>
                       </div>
-                      <span className="text-gray-400 text-[10px]">{br.count}</span>
+                      <span className="text-slate-400 dark:text-slate-500 text-[10px]">{br.count}</span>
                     </label>
                   ))}
                 </div>
@@ -174,10 +174,10 @@ function ProductListContent() {
           </div>
 
           {/* Battery capacity */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('battery')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Battery capacity</span>
               {openAccordions.battery ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -185,10 +185,10 @@ function ProductListContent() {
           </div>
 
           {/* Screen type */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('screen')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Screen type</span>
               {openAccordions.screen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -196,10 +196,10 @@ function ProductListContent() {
           </div>
 
           {/* Screen diagonal */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('diagonal')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Screen diagonal</span>
               {openAccordions.diagonal ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -207,10 +207,10 @@ function ProductListContent() {
           </div>
 
           {/* Protection class */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('protection')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Protection class</span>
               {openAccordions.protection ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -218,10 +218,10 @@ function ProductListContent() {
           </div>
 
           {/* Built-in memory */}
-          <div className="border-b border-gray-200 pb-4">
+          <div className="border-b border-black/5 dark:border-white/5 pb-4">
             <button 
               onClick={() => toggleAccordion('memory')} 
-              className="w-full flex items-center justify-between font-bold text-sm text-gray-800 uppercase tracking-wider py-2"
+              className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
             >
               <span>Built-in memory</span>
               {openAccordions.memory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -232,16 +232,16 @@ function ProductListContent() {
         {/* Products Listing Grid */}
         <div className="lg:col-span-3 space-y-6">
           {/* Header Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-gray-100 pb-4">
-            <div className="text-gray-400 text-sm font-semibold">
-              Selected Products: <span className="text-black font-extrabold">{productsList.length}</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-4">
+            <div className="text-slate-400 dark:text-slate-400 text-sm font-semibold">
+              Selected Products: <span className="text-slate-900 dark:text-white font-extrabold">{productsList.length}</span>
             </div>
             
             <div className="flex items-center space-x-4">
               <select
                 value={sortFilter}
                 onChange={(e) => updateFilters({ sortBy: e.target.value })}
-                className="bg-white border border-gray-200 text-gray-700 rounded-lg py-2 px-4 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-black cursor-pointer"
+                className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-white/10 text-slate-700 dark:text-slate-350 rounded-lg py-2 px-4 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
               >
                 <option value="newest">By rating</option>
                 <option value="oldest">Oldest First</option>
@@ -255,12 +255,12 @@ function ProductListContent() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-gray-50 border border-gray-200 rounded-2xl h-[360px] animate-pulse" />
+                <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl h-[360px] animate-pulse" />
               ))}
             </div>
           ) : productsList.length === 0 ? (
-            <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-200">
-              <p className="text-gray-400 text-sm">No products found matching the criteria.</p>
+            <div className="text-center py-20 bg-white dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5">
+              <p className="text-slate-500 dark:text-slate-400 text-sm">No products found matching the criteria.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -270,7 +270,7 @@ function ProductListContent() {
                 const isAdded = addedItem === firstVariant?.id;
 
                 return (
-                  <div key={prod.id} className="bg-[#F6F6F6] rounded-xl p-4 flex flex-col justify-between h-[380px] relative group hover:shadow-md transition">
+                  <div key={prod.id} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 rounded-3xl p-5 flex flex-col justify-between h-[390px] relative group hover:shadow-2xl hover:shadow-purple-650/5 transition-all duration-500">
                     <button
                       onClick={() => toggleWishlist({
                         id: prod.id,
@@ -279,36 +279,38 @@ function ProductListContent() {
                         price: Number(prod.price),
                         image: prod.productImages?.[0]?.url || ''
                       })}
-                      className={`absolute top-4 right-4 p-2 rounded-full transition ${
-                        isWished ? 'text-red-500 bg-white shadow-sm' : 'text-gray-450 hover:text-red-500'
+                      className={`absolute top-4 right-4 z-10 p-2.5 rounded-2xl border transition ${
+                        isWished 
+                          ? 'text-red-500 bg-white border-red-100 shadow-md' 
+                          : 'text-gray-405 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:text-red-500 hover:bg-white hover:border-white'
                       }`}
                     >
-                      <Heart className="w-4 h-4 fill-current" />
+                      <Heart className="w-3.5 h-3.5 fill-current" />
                     </button>
 
                     <div className="flex-1 flex flex-col items-center justify-center p-2">
                       <img 
                         src={prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'} 
                         alt={prod.name} 
-                        className="max-h-[150px] object-contain group-hover:scale-102 transition duration-350" 
+                        className="max-h-[150px] object-contain group-hover:scale-102 transition duration-350 drop-shadow-[0_10px_20px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)]" 
                       />
                     </div>
 
-                    <div className="mt-4 space-y-2 text-center">
-                      <h4 className="font-semibold text-xs text-gray-800 line-clamp-2 hover:text-black">
+                    <div className="mt-4 space-y-2.5 text-center">
+                      <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 hover:text-purple-650 dark:hover:text-white transition">
                         <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
                       </h4>
-                      <p className="font-bold text-base">
+                      <p className="font-bold text-base text-slate-905 dark:text-white">
                         {formatPrice(prod.salePrice || prod.price)}
                       </p>
                       
                       <button
                         onClick={() => handleAddToCartClick(prod)}
                         disabled={firstVariant?.stock === 0}
-                        className={`w-full py-3 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
+                        className={`w-full py-3.5 rounded-2xl text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
                           isAdded 
-                            ? 'bg-emerald-600 text-white' 
-                            : 'bg-black text-white hover:bg-gray-950'
+                            ? 'bg-emerald-650 dark:bg-emerald-600 text-white' 
+                            : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 shadow-md'
                         }`}
                       >
                         {isAdded ? (
@@ -329,13 +331,13 @@ function ProductListContent() {
 
           {/* Pagination */}
           <div className="flex items-center justify-center space-x-2 pt-8">
-            <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs font-semibold text-gray-500">&lt;</button>
-            <button className="px-3 py-2 bg-black text-white rounded-lg text-xs font-semibold">1</button>
-            <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs font-semibold text-gray-500">2</button>
-            <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs font-semibold text-gray-500">3</button>
-            <span className="text-gray-400 text-xs px-2">...</span>
-            <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs font-semibold text-gray-500">12</button>
-            <button className="px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-xs font-semibold text-gray-500">&gt;</button>
+            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">&lt;</button>
+            <button className="px-3.5 py-2 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-semibold">1</button>
+            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">2</button>
+            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">3</button>
+            <span className="text-slate-400 dark:text-slate-600 text-xs px-2">...</span>
+            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">12</button>
+            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">&gt;</button>
           </div>
         </div>
       </div>
@@ -345,7 +347,7 @@ function ProductListContent() {
 
 export default function ProductListPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white text-black flex items-center justify-center">Loading catalogue...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-900 dark:text-white flex items-center justify-center">Loading catalogue...</div>}>
       <ProductListContent />
     </Suspense>
   );

@@ -56,7 +56,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-black flex items-center justify-center">
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 flex items-center justify-center">
         <p className="animate-pulse text-sm font-semibold tracking-wider uppercase">Loading product details...</p>
       </div>
     );
@@ -64,9 +64,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 flex flex-col items-center justify-center space-y-4">
         <p className="text-red-500 font-semibold">{error || 'Product not found.'}</p>
-        <Link href="/products" className="text-xs uppercase tracking-wider font-bold py-2.5 px-5 bg-black text-white rounded-lg hover:bg-gray-900 transition">Back to Catalogue</Link>
+        <Link href="/products" className="text-xs uppercase tracking-wider font-bold py-2.5 px-5 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition">Back to Catalogue</Link>
       </div>
     );
   }
@@ -101,14 +101,14 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   ];
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans py-8 px-6 sm:px-12 lg:px-24">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 font-sans py-8 px-6 sm:px-12 lg:px-24 transition-colors duration-300">
       {/* Breadcrumbs */}
-      <div className="flex items-center space-x-2 text-xs text-gray-400 mb-8">
-        <Link href="/" className="hover:text-black">Home</Link>
+      <div className="flex items-center space-x-2 text-xs text-slate-400 mb-8">
+        <Link href="/" className="hover:text-purple-650 dark:hover:text-white transition">Home</Link>
         <ChevronRight className="w-3 h-3" />
-        <Link href="/products" className="hover:text-black">Catalog</Link>
+        <Link href="/products" className="hover:text-purple-650 dark:hover:text-white transition">Catalog</Link>
         <ChevronRight className="w-3 h-3" />
-        <span className="text-black capitalize font-medium">{product.name}</span>
+        <span className="text-slate-800 dark:text-white capitalize font-medium">{product.name}</span>
       </div>
 
       {/* Main product showcase */}
@@ -120,40 +120,40 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               <button
                 key={img.id}
                 onClick={() => setSelectedImage(img.url)}
-                className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden bg-gray-50 border p-1 transition ${
-                  selectedImage === img.url ? 'border-black' : 'border-gray-200'
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden bg-white dark:bg-white/5 border p-1 transition ${
+                  selectedImage === img.url ? 'border-purple-500 dark:border-white' : 'border-slate-200 dark:border-white/10'
                 }`}
               >
                 <img src={img.url} alt={product.name} className="w-full h-full object-contain" />
               </button>
             ))}
           </div>
-          <div className="flex-1 aspect-square bg-[#F6F6F6] rounded-2xl flex items-center justify-center p-8 border border-gray-100">
-            <img src={selectedImage} alt={product.name} className="max-h-[360px] object-contain" />
+          <div className="flex-1 aspect-square bg-white dark:bg-white/5 rounded-2xl flex items-center justify-center p-8 border border-black/5 dark:border-white/10">
+            <img src={selectedImage} alt={product.name} className="max-h-[360px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)]" />
           </div>
         </div>
 
         {/* Purchase details */}
         <div className="space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-extrabold tracking-tight">{product.name}</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{product.name}</h1>
             <div className="flex items-center space-x-3 text-lg font-bold">
-              <span className="text-2xl font-black">{formatPrice(product.salePrice || product.price)}</span>
+              <span className="text-2xl font-black text-slate-900 dark:text-white">{formatPrice(product.salePrice || product.price)}</span>
               {product.salePrice && (
-                <span className="text-gray-450 line-through font-normal">{formatPrice(product.price)}</span>
+                <span className="text-slate-400 dark:text-slate-500 line-through font-normal">{formatPrice(product.price)}</span>
               )}
             </div>
           </div>
 
           {/* Color selector */}
           <div className="space-y-2.5">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Color</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Select Color</span>
             <div className="flex items-center space-x-3">
               {['#000000', '#5F4B8B', '#FF0000', '#FFD700', '#EDEDED'].map((color, i) => (
                 <button
                   key={i}
                   style={{ backgroundColor: color }}
-                  className="w-8 h-8 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black ring-offset-2 transition"
+                  className="w-8 h-8 rounded-full border border-slate-350 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500 ring-offset-2 transition"
                 />
               ))}
             </div>
@@ -162,16 +162,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           {/* Specifications selectors */}
           {product.productVariants && product.productVariants.length > 1 && (
             <div className="space-y-2.5">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Capacity</span>
+              <span className="text-xs font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Select Capacity</span>
               <div className="flex flex-wrap gap-2.5">
                 {product.productVariants.map((variant: any) => (
                   <button
                     key={variant.id}
                     onClick={() => setSelectedVariant(variant)}
-                    className={`py-2 px-5 text-xs font-semibold rounded-lg border transition ${
+                    className={`py-2 px-5 text-xs font-semibold rounded-xl border transition ${
                       selectedVariant?.id === variant.id
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-250 text-gray-600 hover:border-black'
+                        ? 'border-slate-950 dark:border-white bg-slate-950 dark:bg-white text-white dark:text-slate-950'
+                        : 'border-slate-205 dark:border-white/10 text-slate-600 dark:text-slate-350 hover:border-slate-900 dark:hover:border-white'
                     }`}
                   >
                     {variant.sku}
@@ -191,9 +191,9 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               { label: 'Front camera', val: '12 MP' },
               { label: 'Warranty', val: '1 Year' },
             ].map((spec, i) => (
-              <div key={i} className="bg-[#F6F6F6] rounded-xl p-3 border border-gray-100 flex flex-col justify-center">
-                <span className="text-[10px] text-gray-400 font-medium">{spec.label}</span>
-                <span className="text-xs font-bold text-gray-800">{spec.val}</span>
+              <div key={i} className="bg-white dark:bg-white/5 rounded-2xl p-3 border border-black/5 dark:border-white/10 flex flex-col justify-center">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{spec.label}</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{spec.val}</span>
               </div>
             ))}
           </div>
@@ -210,8 +210,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               })}
               className={`py-3 px-6 border rounded-xl font-bold text-xs uppercase tracking-wider transition ${
                 isWished 
-                  ? 'border-red-500 bg-red-50 text-red-500' 
-                  : 'border-gray-300 text-gray-600 hover:border-black hover:text-black'
+                  ? 'border-red-500 bg-red-50 text-red-550' 
+                  : 'border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-350 hover:border-slate-900 dark:hover:border-white hover:text-slate-950 dark:hover:text-white'
               }`}
             >
               Add to Wishlist
@@ -219,7 +219,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             <button
               onClick={handleAddToCart}
               disabled={!selectedVariant || selectedVariant.stock === 0}
-              className="flex-1 py-3 px-6 bg-black hover:bg-gray-950 disabled:opacity-50 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2 text-xs uppercase tracking-wider"
+              className="flex-1 py-3 px-6 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 disabled:opacity-50 text-white dark:text-black font-bold rounded-xl transition flex items-center justify-center space-x-2 text-xs uppercase tracking-wider shadow-md"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>{addedMessage ? 'Added to Cart ✓' : 'Add to Cart'}</span>
@@ -227,26 +227,26 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           </div>
 
           {/* Logistics badges */}
-          <div className="grid grid-cols-3 gap-4 border-t border-gray-100 pt-6">
+          <div className="grid grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-900 pt-6">
             <div className="flex items-center space-x-2.5">
-              <Truck className="w-5 h-5 text-gray-600 shrink-0" />
+              <Truck className="w-5 h-5 text-slate-605 dark:text-slate-400 shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Free Delivery</span>
-                <span className="text-[9px] text-gray-400 block">1-2 consecutive days</span>
+                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block">Free Delivery</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 block">1-2 consecutive days</span>
               </div>
             </div>
             <div className="flex items-center space-x-2.5">
-              <RotateCcw className="w-5 h-5 text-gray-600 shrink-0" />
+              <RotateCcw className="w-5 h-5 text-slate-605 dark:text-slate-400 shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">In Stock</span>
-                <span className="text-[9px] text-gray-400 block">Available today</span>
+                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block">In Stock</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 block">Available today</span>
               </div>
             </div>
             <div className="flex items-center space-x-2.5">
-              <ShieldCheck className="w-5 h-5 text-gray-600 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-slate-605 dark:text-slate-400 shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-gray-800 block">Guaranteed</span>
-                <span className="text-[9px] text-gray-400 block">1 year warranty</span>
+                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block">Guaranteed</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 block">1 year warranty</span>
               </div>
             </div>
           </div>
@@ -254,8 +254,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       </div>
 
       {/* Tabs description */}
-      <div className="border-t border-gray-200 pt-8 mb-16">
-        <div className="flex items-center space-x-6 border-b border-gray-150 pb-3 mb-6">
+      <div className="border-t border-slate-200 dark:border-slate-900 pt-8 mb-16">
+        <div className="flex items-center space-x-6 border-b border-slate-150 dark:border-slate-900 pb-3 mb-6">
           {[
             { id: 'details', label: 'Details' },
             { id: 'specs', label: 'Specifications' },
@@ -265,32 +265,32 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`text-sm font-semibold pb-3 transition relative ${
-                activeTab === tab.id ? 'text-black' : 'text-gray-400 hover:text-black'
+                activeTab === tab.id ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-white'
               }`}
             >
               {tab.label}
               {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-black" />
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-purple-650 dark:bg-purple-500" />
               )}
             </button>
           ))}
         </div>
 
         {activeTab === 'details' && (
-          <div className="space-y-4 text-sm text-gray-600 leading-relaxed max-w-3xl">
+          <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
             <p>{product.description}</p>
             <p>Experience flagship performance in everyday tasks. Built with sustainability in mind, utilizing recycled components and highly efficient processors that optimize battery cycles.</p>
           </div>
         )}
 
         {activeTab === 'specs' && (
-          <div className="max-w-2xl border border-gray-200 rounded-xl overflow-hidden text-xs">
+          <div className="max-w-2xl border border-slate-200 dark:border-slate-805 rounded-xl overflow-hidden text-xs">
             <table className="w-full text-left border-collapse">
-              <tbody className="divide-y divide-gray-150 text-gray-600">
-                <tr className="bg-gray-50"><td className="py-3 px-4 font-bold text-black w-1/3">Model SKU</td><td className="py-3 px-4">{selectedVariant?.sku || product.sku}</td></tr>
-                <tr><td className="py-3 px-4 font-bold text-black">Brand</td><td className="py-3 px-4">{product.brand?.name || 'Shopora'}</td></tr>
-                <tr className="bg-gray-50"><td className="py-3 px-4 font-bold text-black">Warranty</td><td className="py-3 px-4">1 Year Brand Warranty</td></tr>
-                <tr><td className="py-3 px-4 font-bold text-black">Logistics Partner</td><td className="py-3 px-4">DHL Express / FedEx</td></tr>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-slate-600 dark:text-slate-350">
+                <tr className="bg-slate-50 dark:bg-[#0c0d15]"><td className="py-3 px-4 font-bold text-slate-900 dark:text-white w-1/3">Model SKU</td><td className="py-3 px-4">{selectedVariant?.sku || product.sku}</td></tr>
+                <tr><td className="py-3 px-4 font-bold text-slate-900 dark:text-white">Brand</td><td className="py-3 px-4">{product.brand?.name || 'Shopora'}</td></tr>
+                <tr className="bg-slate-50 dark:bg-[#0c0d15]"><td className="py-3 px-4 font-bold text-slate-900 dark:text-white">Warranty</td><td className="py-3 px-4">1 Year Brand Warranty</td></tr>
+                <tr><td className="py-3 px-4 font-bold text-slate-900 dark:text-white">Logistics Partner</td><td className="py-3 px-4">DHL Express / FedEx</td></tr>
               </tbody>
             </table>
           </div>
@@ -299,10 +299,10 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
         {activeTab === 'reviews' && (
           <div className="space-y-8">
             {/* Reviews Breakdown Header */}
-            <div className="flex flex-col md:flex-row gap-8 items-center bg-[#F6F6F6] p-6 rounded-2xl border border-gray-100 max-w-xl">
-              <div className="text-center md:border-r border-gray-200 md:pr-8">
-                <span className="text-5xl font-black block">4.8</span>
-                <span className="text-xs text-gray-400 block mt-1">of 5 stars</span>
+            <div className="flex flex-col md:flex-row gap-8 items-center bg-white dark:bg-[#0c0d15] p-6 rounded-2xl border border-black/5 dark:border-slate-800/40 max-w-xl shadow-md">
+              <div className="text-center md:border-r border-slate-100 dark:border-slate-900 md:pr-8">
+                <span className="text-5xl font-black block text-slate-900 dark:text-white">4.8</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 block mt-1">of 5 stars</span>
                 <div className="flex items-center space-x-0.5 justify-center mt-2">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -318,11 +318,11 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                   { label: 'Poor', count: 1, percentage: '1%' },
                 ].map((stat, idx) => (
                   <div key={idx} className="flex items-center space-x-3">
-                    <span className="w-20 font-medium text-gray-650">{stat.label}</span>
-                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <span className="w-20 font-medium text-slate-600 dark:text-slate-400">{stat.label}</span>
+                    <div className="flex-1 h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div style={{ width: stat.percentage }} className="h-full bg-amber-400 rounded-full" />
                     </div>
-                    <span className="w-8 text-right text-gray-400 font-semibold">{stat.count}</span>
+                    <span className="w-8 text-right text-slate-450 dark:text-slate-500 font-semibold">{stat.count}</span>
                   </div>
                 ))}
               </div>
@@ -331,13 +331,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             {/* User comments list */}
             <div className="space-y-6 max-w-2xl">
               {mockReviews.map((rev, i) => (
-                <div key={i} className="border-b border-gray-100 pb-6 space-y-3">
+                <div key={i} className="border-b border-slate-100 dark:border-slate-900 pb-6 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <img src={rev.avatar} alt={rev.name} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+                      <img src={rev.avatar} alt={rev.name} className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-800" />
                       <div>
-                        <h4 className="font-bold text-sm text-gray-800">{rev.name}</h4>
-                        <span className="text-[10px] text-gray-400 block">{rev.date}</span>
+                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">{rev.name}</h4>
+                        <span className="text-[10px] text-slate-405 dark:text-slate-500 block">{rev.date}</span>
                       </div>
                     </div>
                     <div className="flex space-x-0.5">
@@ -346,7 +346,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed font-medium">"{rev.comment}"</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-405 leading-relaxed font-medium">"{rev.comment}"</p>
                 </div>
               ))}
             </div>
@@ -356,31 +356,31 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
       {/* Related products */}
       {relatedProducts.length > 0 && (
-        <div className="border-t border-gray-250 pt-12 space-y-6">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Related Products</h2>
+        <div className="border-t border-slate-200 dark:border-slate-850 pt-12 space-y-6">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Related Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {relatedProducts.map((rel) => {
               const relImage = rel.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200';
               return (
-                <div key={rel.id} className="bg-[#F6F6F6] rounded-xl p-4 flex flex-col justify-between h-[360px] relative group hover:shadow-md transition">
+                <div key={rel.id} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 rounded-3xl p-4 flex flex-col justify-between h-[360px] relative group hover:shadow-2xl hover:shadow-purple-650/5 transition-all duration-500">
                   <div className="flex-1 flex flex-col items-center justify-center p-2">
                     <img 
                       src={relImage} 
                       alt={rel.name} 
-                      className="max-h-[140px] object-contain group-hover:scale-102 transition duration-300" 
+                      className="max-h-[140px] object-contain group-hover:scale-102 transition duration-300 drop-shadow-[0_10px_10px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]" 
                     />
                   </div>
 
-                  <div className="mt-4 space-y-2 text-center">
-                    <h4 className="font-semibold text-xs text-gray-800 line-clamp-2 hover:text-black">
+                  <div className="mt-4 space-y-2.5 text-center">
+                    <h4 className="font-semibold text-xs text-slate-800 dark:text-slate-200 line-clamp-2 hover:text-purple-650 dark:hover:text-white transition">
                       <Link href={`/products/${rel.slug}`}>{rel.name}</Link>
                     </h4>
-                    <p className="font-bold text-sm">
+                    <p className="font-bold text-sm text-slate-900 dark:text-white">
                       {formatPrice(rel.price)}
                     </p>
                     <Link
                       href={`/products/${rel.slug}`}
-                      className="inline-block w-full py-2.5 bg-black text-white hover:bg-gray-950 text-xs font-bold rounded-lg text-center transition"
+                      className="inline-block w-full py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-black text-xs font-bold rounded-xl text-center transition shadow-md"
                     >
                       View Details
                     </Link>

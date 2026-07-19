@@ -55,7 +55,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#05060b] via-[#090b11] to-[#040508] py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] via-[#fafafa] to-purple-50/20 dark:from-[#05060b] dark:via-[#090b11] dark:to-[#040508] py-16 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -64,29 +64,29 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       <article className="max-w-3xl mx-auto space-y-8">
         
         {/* Back Link */}
-        <Link href="/blog" className="inline-flex items-center space-x-2 text-xs uppercase tracking-wider font-extrabold text-slate-400 hover:text-white transition">
+        <Link href="/blog" className="inline-flex items-center space-x-2 text-xs uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 hover:text-purple-650 dark:hover:text-white transition">
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Blog</span>
         </Link>
 
         {/* Title & Metadata */}
         <div className="space-y-4">
-          <h1 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black font-display text-slate-900 dark:text-white tracking-tight leading-tight">
             {post.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400 font-semibold border-b border-slate-900 pb-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-900 pb-6">
             <span className="flex items-center space-x-1.5">
-              <User className="w-4 h-4 text-slate-500" />
+              <User className="w-4 h-4 text-slate-400" />
               <span>By {post.authorName}</span>
             </span>
             <span className="flex items-center space-x-1.5">
-              <Clock className="w-4 h-4 text-slate-500" />
+              <Clock className="w-4 h-4 text-slate-400" />
               <span>{post.readTime}</span>
             </span>
             {post.publishedAt && (
               <span className="flex items-center space-x-1.5">
-                <Calendar className="w-4 h-4 text-slate-500" />
+                <Calendar className="w-4 h-4 text-slate-400" />
                 <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </span>
             )}
@@ -95,21 +95,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
         {/* Featured Image */}
         {post.imageUrl && (
-          <div className="aspect-video w-full rounded-3xl overflow-hidden border border-slate-800/40 shadow-xl shadow-black/25">
+          <div className="aspect-video w-full rounded-3xl overflow-hidden border border-black/5 dark:border-slate-800/40 shadow-xl">
             <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
           </div>
         )}
 
         {/* Article Body */}
         <div 
-          className="text-slate-300 leading-relaxed space-y-6 pt-4 text-sm sm:text-base border-t border-slate-900/60"
+          className="text-slate-700 dark:text-slate-300 leading-relaxed space-y-6 pt-4 text-sm sm:text-base border-t border-slate-100 dark:border-slate-900/60"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
         {/* Share Button Section */}
-        <div className="border-t border-slate-900/60 pt-8 flex items-center justify-between">
+        <div className="border-t border-slate-100 dark:border-slate-900/60 pt-8 flex items-center justify-between">
           <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wider">Share this article</span>
-          <button className="flex items-center space-x-2 py-2 px-4 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-slate-350 hover:text-white transition">
+          <button className="flex items-center space-x-2 py-2 px-4 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-350 hover:text-purple-600 dark:hover:text-white transition">
             <Share2 className="w-3.5 h-3.5" />
             <span>Copy Link</span>
           </button>
