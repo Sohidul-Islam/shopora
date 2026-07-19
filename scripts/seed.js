@@ -30,7 +30,8 @@ async function main() {
       'variant_attribute_values', 'product_variants', 'attribute_values', 'product_attributes', 
       'product_tags', 'product_images', 'product_categories', 'products', 
       'brands', 'categories', 'sessions', 'oauth_accounts', 'users', 
-      'role_permissions', 'permissions', 'roles', 'banners', 'pages', 'faqs', 'notifications', 'settings'
+      'role_permissions', 'permissions', 'roles', 'banners', 'pages', 'faqs', 'notifications', 'settings',
+      'blog_posts', 'landing_pages', 'campaigns'
     ];
     
     for (const table of tables) {
