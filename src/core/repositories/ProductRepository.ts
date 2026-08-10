@@ -100,6 +100,67 @@ export class ProductRepository {
     return results;
   }
 
+  async getProductsCount(filters: ProductFilterOptions = {}) {
+    const { categorySlug, brandSlug, minPrice, maxPrice, searchQuery } = filters;
+    let whereClauses: any[] = [eq(products.status, 'PUBLISHED'), isNull(products.deletedAt)];
+
+    if (searchQuery) {
+      whereClauses.push(
+        or(
+          like(products.name, `%${searchQuery}%`),
+          like(products.description, `%${searchQuery}%`),
+          like(products.sku, `%${searchQuery}%`)
+        )
+      );
+    }
+
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      whereClauses.push(between(products.price, String(minPrice), String(maxPrice)));
+    } else if (minPrice !== undefined) {
+      whereClauses.push(sql`${products.price} >= ${minPrice}`);
+    } else if (maxPrice !== undefined) {
+      whereClauses.push(sql`${products.price} <= ${maxPrice}`);
+    }
+
+    let categoryIds: string[] = [];
+    if (categorySlug) {
+      const cat = await db.query.categories.findFirst({
+        where: eq(categories.slug, categorySlug),
+      });
+      if (cat) {
+        categoryIds.push(cat.id);
+        const subCats = await db.select({ id: categories.id }).from(categories).where(eq(categories.parentId, cat.id));
+        categoryIds.push(...subCats.map(c => c.id));
+      }
+    }
+
+    if (brandSlug) {
+      const br = await db.query.brands.findFirst({
+        where: eq(brands.slug, brandSlug),
+      });
+      if (br) {
+        whereClauses.push(eq(products.brandId, br.id));
+      }
+    }
+
+    if (categoryIds.length > 0) {
+      const results = await db.query.products.findMany({
+        where: and(...whereClauses),
+        with: {
+          productCategories: true,
+        }
+      });
+      return results.filter(prod => 
+        (prod.productCategories as any[]).some((pc: any) => categoryIds.includes(pc.categoryId))
+      ).length;
+    }
+
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(products)
+      .where(and(...whereClauses));
+    return result[0]?.count || 0;
+  }
+
   async findBySlug(slug: string) {
     return db.query.products.findFirst({
       where: eq(products.slug, slug),

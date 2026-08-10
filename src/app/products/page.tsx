@@ -22,6 +22,7 @@ function ProductListContent() {
   const [productsList, setProductsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [addedItem, setAddedItem] = useState<string | null>(null);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   // Filter States
   const categoryFilter = searchParams.get('category') || '';
@@ -30,6 +31,8 @@ function ProductListContent() {
   const queryFilter = searchParams.get('q') || '';
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
+  const pageFilter = Number(searchParams.get('page')) || 1;
+  const limitFilter = Number(searchParams.get('limit')) || 12;
 
   // Accordion state
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
@@ -49,6 +52,7 @@ function ProductListContent() {
     async function fetchProducts() {
       setLoading(true);
       try {
+        const offset = (pageFilter - 1) * limitFilter;
         const queryStr = new URLSearchParams({
           category: categoryFilter,
           brand: brandFilter,
@@ -56,12 +60,15 @@ function ProductListContent() {
           q: queryFilter,
           minPrice: minPrice,
           maxPrice: maxPrice,
+          limit: String(limitFilter),
+          offset: String(offset),
         }).toString();
 
         const response = await fetch(`/api/products?${queryStr}`);
         const res = await response.json();
         if (res.success) {
           setProductsList(res.products);
+          setTotalProducts(res.total || 0);
         }
       } catch (err) {
         console.error(err);
@@ -70,7 +77,7 @@ function ProductListContent() {
       }
     }
     fetchProducts();
-  }, [categoryFilter, brandFilter, sortFilter, queryFilter, minPrice, maxPrice]);
+  }, [categoryFilter, brandFilter, sortFilter, queryFilter, minPrice, maxPrice, pageFilter, limitFilter]);
 
   const updateFilters = (newFilters: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -81,6 +88,13 @@ function ProductListContent() {
         params.set(key, val);
       }
     });
+    if (!newFilters.hasOwnProperty('page')) {
+      params.delete('page');
+    }
+    // Also clear page if changing limit to prevent out of bounds
+    if (newFilters.hasOwnProperty('limit')) {
+      params.delete('page');
+    }
     router.push(`/products?${params.toString()}`);
   };
 
@@ -329,16 +343,93 @@ function ProductListContent() {
             </div>
           )}
 
-          {/* Pagination */}
-          <div className="flex items-center justify-center space-x-2 pt-8">
-            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">&lt;</button>
-            <button className="px-3.5 py-2 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-semibold">1</button>
-            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">2</button>
-            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">3</button>
-            <span className="text-slate-400 dark:text-slate-600 text-xs px-2">...</span>
-            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">12</button>
-            <button className="px-3.5 py-2 border border-black/5 dark:border-white/10 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-semibold text-slate-500 dark:text-slate-400">&gt;</button>
-          </div>
+          {/* Smart Pagination */}
+          {(() => {
+            const totalPages = Math.ceil(totalProducts / limitFilter) || 1;
+            
+            const getPageNumbers = () => {
+              const pages: (number | string)[] = [];
+              const delta = 1; // page siblings
+              
+              for (let i = 1; i <= totalPages; i++) {
+                if (
+                  i === 1 || 
+                  i === totalPages || 
+                  (i >= pageFilter - delta && i <= pageFilter + delta)
+                ) {
+                  pages.push(i);
+                } else if (pages[pages.length - 1] !== '...') {
+                  pages.push('...');
+                }
+              }
+              return pages;
+            };
+
+            if (totalPages <= 1 && totalProducts <= 12) return null;
+
+            return (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-10 border-t border-black/5 dark:border-white/5 mt-8 transition-all duration-300">
+                {/* Page Size Adjuster */}
+                <div className="flex items-center space-x-2.5 text-xs text-slate-500 dark:text-slate-400">
+                  <span>Show</span>
+                  <select
+                    value={limitFilter}
+                    onChange={(e) => updateFilters({ limit: e.target.value })}
+                    className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800/80 rounded-xl px-3 py-1.5 font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-purple-500 transition cursor-pointer"
+                  >
+                    <option value="12">12 products</option>
+                    <option value="24">24 products</option>
+                    <option value="48">48 products</option>
+                    <option value="96">96 products</option>
+                  </select>
+                  <span>of {totalProducts} items</span>
+                </div>
+
+                {/* Smart Page Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      onClick={() => pageFilter > 1 && updateFilters({ page: String(pageFilter - 1) })}
+                      disabled={pageFilter === 1}
+                      className="p-2 border border-black/10 dark:border-slate-800 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-bold text-slate-600 dark:text-slate-350 disabled:opacity-30 disabled:pointer-events-none transition flex items-center justify-center min-w-[36px] min-h-[36px]"
+                    >
+                      &lt;
+                    </button>
+                    {getPageNumbers().map((pNum, idx) => {
+                      if (pNum === '...') {
+                        return (
+                          <span key={`ellipsis-${idx}`} className="text-slate-400 dark:text-slate-600 text-xs px-1.5 select-none">
+                            ...
+                          </span>
+                        );
+                      }
+                      const isCurrent = pNum === pageFilter;
+                      return (
+                        <button
+                          key={`page-${pNum}`}
+                          onClick={() => updateFilters({ page: String(pNum) })}
+                          className={`min-w-[36px] min-h-[36px] px-2 rounded-xl text-xs font-bold transition flex items-center justify-center ${
+                            isCurrent
+                              ? 'bg-slate-900 dark:bg-white text-white dark:text-black shadow-md'
+                              : 'border border-black/10 dark:border-slate-800 hover:bg-black/5 dark:hover:bg-white/5 text-slate-600 dark:text-slate-350'
+                          }`}
+                        >
+                          {pNum}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => pageFilter < totalPages && updateFilters({ page: String(pageFilter + 1) })}
+                      disabled={pageFilter === totalPages}
+                      className="p-2 border border-black/10 dark:border-slate-800 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-xs font-bold text-slate-600 dark:text-slate-350 disabled:opacity-30 disabled:pointer-events-none transition flex items-center justify-center min-w-[36px] min-h-[36px]"
+                    >
+                      &gt;
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>

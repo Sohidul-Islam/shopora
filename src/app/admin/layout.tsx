@@ -18,10 +18,13 @@ export default function AdminLayout({
   useEffect(() => {
     if (!sessionToken || !user) {
       setAuthorized(false);
-    } else if (user.role !== 'Admin' && user.role !== 'Manager') {
-      setAuthorized(false);
     } else {
-      setAuthorized(true);
+      const roleName = typeof user.role === 'object' ? (user.role as any)?.name : user.role;
+      if (roleName !== 'Admin' && roleName !== 'Manager') {
+        setAuthorized(false);
+      } else {
+        setAuthorized(true);
+      }
     }
   }, [user, sessionToken]);
 

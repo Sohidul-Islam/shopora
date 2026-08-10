@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : 20;
     const offset = searchParams.get('offset') ? Number(searchParams.get('offset')) : 0;
 
-    const list = await productService.listStorefrontProducts({
+    const filters = {
       categorySlug,
       brandSlug,
       minPrice,
@@ -39,9 +39,14 @@ export async function GET(req: Request) {
       sortBy,
       limit,
       offset
-    });
+    };
 
-    return NextResponse.json({ success: true, products: list });
+    const [list, total] = await Promise.all([
+      productService.listStorefrontProducts(filters),
+      productService.listStorefrontProductsCount(filters)
+    ]);
+
+    return NextResponse.json({ success: true, products: list, total });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to list products' }, { status: 400 });
   }

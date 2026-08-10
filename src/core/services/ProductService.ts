@@ -10,6 +10,10 @@ export class ProductService {
     return productRepository.getProducts(filters);
   }
 
+  async listStorefrontProductsCount(filters: ProductFilterOptions) {
+    return productRepository.getProductsCount(filters);
+  }
+
   async getProductDetails(slug: string) {
     const product = await productRepository.findBySlug(slug);
     if (!product) throw new Error('Product not found.');
