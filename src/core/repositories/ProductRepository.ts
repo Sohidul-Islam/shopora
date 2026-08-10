@@ -4,10 +4,12 @@ import { eq, and, or, like, asc, desc, between, sql, inArray, isNull } from 'dri
 
 export interface ProductFilterOptions {
   categorySlug?: string;
-  brandSlug?: string;
+  brandSlug?: string;    // legacy single
+  brandSlugs?: string[]; // multi-select
   minPrice?: number;
   maxPrice?: number;
   searchQuery?: string;
+  minRating?: number;
   sortBy?: 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popular' | 'best-selling';
   limit?: number;
   offset?: number;
@@ -15,9 +17,8 @@ export interface ProductFilterOptions {
 
 export class ProductRepository {
   async getProducts(filters: ProductFilterOptions = {}) {
-    const { categorySlug, brandSlug, minPrice, maxPrice, searchQuery, sortBy, limit = 20, offset = 0 } = filters;
+    const { categorySlug, brandSlug, brandSlugs, minPrice, maxPrice, searchQuery, sortBy, minRating, limit = 20, offset = 0 } = filters;
     
-    // We can do advanced query compilation. Let's query using db.query API
     let whereClauses: any[] = [eq(products.status, 'PUBLISHED'), isNull(products.deletedAt)];
 
     if (searchQuery) {
@@ -38,7 +39,7 @@ export class ProductRepository {
       whereClauses.push(sql`${products.price} <= ${maxPrice}`);
     }
 
-    // Handled category subqueries or joins
+    // Category filter — resolves slug → id + children
     let categoryIds: string[] = [];
     if (categorySlug) {
       const cat = await db.query.categories.findFirst({
@@ -46,18 +47,20 @@ export class ProductRepository {
       });
       if (cat) {
         categoryIds.push(cat.id);
-        // also find children subcategories
         const subCats = await db.select({ id: categories.id }).from(categories).where(eq(categories.parentId, cat.id));
         categoryIds.push(...subCats.map(c => c.id));
       }
     }
 
-    if (brandSlug) {
-      const br = await db.query.brands.findFirst({
-        where: eq(brands.slug, brandSlug),
-      });
-      if (br) {
-        whereClauses.push(eq(products.brandId, br.id));
+    // Multi-brand filter — resolve slugs → brandIds via inArray
+    const effectiveBrandSlugs = brandSlugs && brandSlugs.length > 0 ? brandSlugs : (brandSlug ? [brandSlug] : []);
+    if (effectiveBrandSlugs.length > 0) {
+      const matchedBrands = await db.select({ id: brands.id }).from(brands).where(inArray(brands.slug, effectiveBrandSlugs));
+      if (matchedBrands.length > 0) {
+        whereClauses.push(inArray(products.brandId, matchedBrands.map(b => b.id)));
+      } else {
+        // No brand matched — return empty
+        whereClauses.push(sql`1=0`);
       }
     }
 
@@ -70,38 +73,42 @@ export class ProductRepository {
       sortOrder = desc(products.price);
     }
 
-    // Perform query
     const results = await db.query.products.findMany({
       where: and(...whereClauses),
-      limit,
-      offset,
+      limit: categoryIds.length > 0 || minRating ? limit * 5 : limit,
+      offset: categoryIds.length > 0 || minRating ? 0 : offset,
       orderBy: sortOrder,
       with: {
         brand: true,
-        productCategories: {
-          with: {
-            category: true,
-          }
-        },
-        productImages: {
-          orderBy: asc(productImages.sortOrder),
-        },
+        productCategories: { with: { category: true } },
+        productImages: { orderBy: asc(productImages.sortOrder) },
         productVariants: true,
       }
     });
 
-    // If category filter is applied, we post-filter or adjust joins.
+    let filtered: any[] = results as any[];
+
     if (categoryIds.length > 0) {
-      return (results as any[]).filter(prod => 
+      filtered = filtered.filter(prod =>
         (prod.productCategories as any[]).some((pc: any) => categoryIds.includes(pc.categoryId))
       );
     }
 
-    return results;
+    // Rating post-filter (averageRating field on product)
+    if (minRating !== undefined && minRating > 0) {
+      filtered = filtered.filter(prod => Number(prod.averageRating || 0) >= minRating);
+    }
+
+    // Re-apply offset+limit after post-filters
+    if (categoryIds.length > 0 || minRating) {
+      return filtered.slice(offset, offset + limit);
+    }
+
+    return filtered;
   }
 
   async getProductsCount(filters: ProductFilterOptions = {}) {
-    const { categorySlug, brandSlug, minPrice, maxPrice, searchQuery } = filters;
+    const { categorySlug, brandSlug, brandSlugs, minPrice, maxPrice, searchQuery, minRating } = filters;
     let whereClauses: any[] = [eq(products.status, 'PUBLISHED'), isNull(products.deletedAt)];
 
     if (searchQuery) {
@@ -134,25 +141,31 @@ export class ProductRepository {
       }
     }
 
-    if (brandSlug) {
-      const br = await db.query.brands.findFirst({
-        where: eq(brands.slug, brandSlug),
-      });
-      if (br) {
-        whereClauses.push(eq(products.brandId, br.id));
+    const effectiveBrandSlugs = brandSlugs && brandSlugs.length > 0 ? brandSlugs : (brandSlug ? [brandSlug] : []);
+    if (effectiveBrandSlugs.length > 0) {
+      const matchedBrands = await db.select({ id: brands.id }).from(brands).where(inArray(brands.slug, effectiveBrandSlugs));
+      if (matchedBrands.length > 0) {
+        whereClauses.push(inArray(products.brandId, matchedBrands.map(b => b.id)));
+      } else {
+        whereClauses.push(sql`1=0`);
       }
     }
 
-    if (categoryIds.length > 0) {
+    if (categoryIds.length > 0 || minRating) {
       const results = await db.query.products.findMany({
         where: and(...whereClauses),
-        with: {
-          productCategories: true,
-        }
+        with: { productCategories: true },
       });
-      return results.filter(prod => 
-        (prod.productCategories as any[]).some((pc: any) => categoryIds.includes(pc.categoryId))
-      ).length;
+      let filtered = results as any[];
+      if (categoryIds.length > 0) {
+        filtered = filtered.filter(prod =>
+          (prod.productCategories as any[]).some((pc: any) => categoryIds.includes(pc.categoryId))
+        );
+      }
+      if (minRating !== undefined && minRating > 0) {
+        filtered = filtered.filter(prod => Number(prod.averageRating || 0) >= minRating);
+      }
+      return filtered.length;
     }
 
     const result = await db.select({ count: sql<number>`count(*)` })
