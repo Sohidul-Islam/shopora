@@ -50,6 +50,7 @@ interface ShopState {
   wishlist: { id: string; name: string; slug: string; price: number; image: string }[];
   toggleWishlist: (product: { id: string; name: string; slug: string; price: number; image: string }) => void;
   isInWishlist: (productId: string) => boolean;
+  syncWishlist: () => Promise<void>;
 
   // Checkout Status / Temporary Address Selection
   selectedAddressId: string | null;
@@ -66,7 +67,7 @@ export const useStore = create<ShopState>()(
       user: null,
       sessionToken: null,
       login: (user, token) => set({ user, sessionToken: token }),
-      logout: () => set({ user: null, sessionToken: null, appliedCoupon: null }),
+      logout: () => set({ user: null, sessionToken: null, appliedCoupon: null, wishlist: [] }),
 
       cart: [],
       appliedCoupon: null,
@@ -99,7 +100,7 @@ export const useStore = create<ShopState>()(
       clearCart: () => set({ cart: [], appliedCoupon: null }),
 
       wishlist: [],
-      toggleWishlist: (product) => {
+      toggleWishlist: async (product) => {
         const current = get().wishlist;
         const exists = current.some((p) => p.id === product.id);
         if (exists) {
@@ -107,9 +108,51 @@ export const useStore = create<ShopState>()(
         } else {
           set({ wishlist: [...current, product] });
         }
+
+        const token = get().sessionToken;
+        if (token) {
+          try {
+            if (exists) {
+              await fetch(`/api/wishlist?productId=${product.id}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+            } else {
+              await fetch('/api/wishlist', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ productId: product.id })
+              });
+            }
+          } catch (err) {
+            console.error('Failed to sync wishlist toggle with server:', err);
+          }
+        }
       },
       isInWishlist: (productId) => {
         return get().wishlist.some((p) => p.id === productId);
+      },
+      syncWishlist: async () => {
+        const token = get().sessionToken;
+        if (!token) return;
+        try {
+          const res = await fetch('/api/wishlist', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await res.json();
+          if (data.success) {
+            set({ wishlist: data.wishlist });
+          }
+        } catch (err) {
+          console.error('Failed to sync wishlist:', err);
+        }
       },
 
       selectedAddressId: null,

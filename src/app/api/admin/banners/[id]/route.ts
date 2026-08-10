@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../../db';
 import { banners } from '../../../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { requireAdmin } from '../../../../../lib/api-auth';
 
 // PATCH /api/admin/banners/[id] - update a banner
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAdmin(req);
     const body = await req.json();
     const { title, subtitle, imageUrl, linkUrl, status } = body;
 
@@ -33,8 +35,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // DELETE /api/admin/banners/[id] - delete a banner
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAdmin(req);
     const existing = await db.select().from(banners).where(eq(banners.id, params.id));
     if (existing.length === 0) {
       return NextResponse.json({ success: false, error: 'Banner not found.' }, { status: 404 });
@@ -44,6 +47,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
     return NextResponse.json({ success: true, message: 'Banner deleted.' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to delete banner' }, { status: 400 });
+    const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : 400;
+    return NextResponse.json({ success: false, error: error.message || 'Failed to delete banner' }, { status });
   }
 }

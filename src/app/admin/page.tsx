@@ -12,8 +12,18 @@ import {
   Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X, Image as ImageIcon
 } from 'lucide-react';
 import { ImageUploader, ProductImageGallery } from '../../components/admin/ImageUploader';
+import { useStore } from '../../store/useStore';
 
 export default function AdminDashboard() {
+  const adminFetch = useCallback(async (url: string, options: RequestInit = {}) => {
+    const token = useStore.getState().sessionToken;
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`
+    };
+    return fetch(url, { ...options, headers });
+  }, []);
+
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -47,7 +57,7 @@ export default function AdminDashboard() {
     setProductsLoading(true);
     setProductsError('');
     try {
-      const res = await fetch('/api/admin/products');
+      const res = await adminFetch('/api/admin/products');
       const data = await res.json();
       if (data.success) setProductsList(data.products);
       else setProductsError(data.error || 'Failed to load products');
@@ -60,7 +70,7 @@ export default function AdminDashboard() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/admin/categories');
+      const res = await adminFetch('/api/admin/categories');
       const data = await res.json();
       if (data.success) setCategoriesList(data.categories);
     } catch {}
@@ -68,7 +78,7 @@ export default function AdminDashboard() {
 
   const fetchBrands = async () => {
     try {
-      const res = await fetch('/api/admin/brands');
+      const res = await adminFetch('/api/admin/brands');
       const data = await res.json();
       if (data.success) setBrandsList(data.brands);
     } catch {}
@@ -79,7 +89,7 @@ export default function AdminDashboard() {
   const fetchBanners = async () => {
     setBannersLoading(true);
     try {
-      const res = await fetch('/api/admin/banners');
+      const res = await adminFetch('/api/admin/banners');
       const data = await res.json();
       if (data.success) setBannersList(data.banners);
     } catch {}
@@ -224,7 +234,7 @@ export default function AdminDashboard() {
 
   const fetchProductImages = useCallback(async (productId: string) => {
     try {
-      const res = await fetch(`/api/admin/products/${productId}/images`);
+      const res = await adminFetch(`/api/admin/products/${productId}/images`);
       const data = await res.json();
       if (data.success) setProductImages(data.images);
     } catch {}
@@ -308,7 +318,7 @@ export default function AdminDashboard() {
       const payload = { ...prodForm, price: String(prodForm.price), salePrice: prodForm.salePrice ? String(prodForm.salePrice) : undefined };
       const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products';
       const method = editingProduct ? 'PATCH' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast(editingProduct ? 'Product updated successfully!' : 'Product created successfully!');
@@ -324,7 +334,7 @@ export default function AdminDashboard() {
   const toggleProductStatus = async (p: any) => {
     const newStatus = p.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
     try {
-      const res = await fetch(`/api/admin/products/${p.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
+      const res = await adminFetch(`/api/admin/products/${p.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast(`Product ${newStatus === 'PUBLISHED' ? 'published' : 'set to draft'}.`);
@@ -337,7 +347,7 @@ export default function AdminDashboard() {
   const deleteProduct = async (id: string) => {
     if (!confirm('Are you sure you want to remove this product? This is a soft delete.')) return;
     try {
-      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast('Product deleted successfully.');
@@ -371,7 +381,7 @@ export default function AdminDashboard() {
       const payload = { ...catForm, parentId: catForm.parentId || null, bannerUrl: catBannerUrl || null, iconUrl: catIconUrl || null };
       const url = editingCategory ? `/api/admin/categories/${editingCategory.id}` : '/api/admin/categories';
       const method = editingCategory ? 'PATCH' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast(editingCategory ? 'Category updated!' : 'Category created!');
@@ -387,7 +397,7 @@ export default function AdminDashboard() {
   const deleteCategory = async (id: string) => {
     if (!confirm('Delete this category? Sub-categories will become root nodes.')) return;
     try {
-      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast('Category deleted.');
@@ -420,7 +430,7 @@ export default function AdminDashboard() {
     try {
       const url = editingBanner ? `/api/admin/banners/${editingBanner.id}` : '/api/admin/banners';
       const method = editingBanner ? 'PATCH' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bannerForm) });
+      const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bannerForm) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast(editingBanner ? 'Banner updated!' : 'Banner created!');
@@ -436,7 +446,7 @@ export default function AdminDashboard() {
   const deleteBanner = async (id: string) => {
     if (!confirm('Remove this banner?')) return;
     try {
-      const res = await fetch(`/api/admin/banners/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/banners/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast('Banner deleted.');
@@ -465,7 +475,7 @@ export default function AdminDashboard() {
     try {
       const url = editingBrand ? `/api/admin/brands/${editingBrand.id}` : '/api/admin/brands';
       const method = editingBrand ? 'PATCH' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(brandForm) });
+      const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(brandForm) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast(editingBrand ? 'Brand updated!' : 'Brand registered!');
@@ -481,7 +491,7 @@ export default function AdminDashboard() {
   const deleteBrand = async (id: string) => {
     if (!confirm('Remove this brand? Products will have their brand unlinked.')) return;
     try {
-      const res = await fetch(`/api/admin/brands/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/admin/brands/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       showToast('Brand deleted.');

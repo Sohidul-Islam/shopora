@@ -49,7 +49,11 @@ export class UserRepository {
     return db.query.sessions.findFirst({
       where: eq(sessions.sessionToken, sessionToken),
       with: {
-        user: true,
+        user: {
+          with: {
+            role: true,
+          }
+        },
       },
     });
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join, extname } from 'path';
+import { requireAdmin } from '../../../../lib/api-auth';
 
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
@@ -8,6 +9,7 @@ const MAX_SIZE_MB = 5;
 
 export async function POST(req: Request) {
   try {
+    await requireAdmin(req);
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'products';

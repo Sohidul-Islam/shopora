@@ -29,3 +29,17 @@ export const wishlists = mysqlTable('wishlists', {
 }, (table) => ({
   pk: index('wishlist_user_product_idx').on(table.userId, table.productId),
 }));
+
+import { relations } from 'drizzle-orm';
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  user: one(users, {
+    fields: [wishlists.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [wishlists.productId],
+    references: [products.id],
+  }),
+}));
+

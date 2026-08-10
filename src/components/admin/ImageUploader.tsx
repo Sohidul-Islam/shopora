@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 
 interface ImageUploaderProps {
   /** The upload target folder: 'products' | 'categories' | 'brands' */
@@ -39,7 +40,14 @@ export function ImageUploader({
       formData.append('file', file);
       formData.append('folder', folder);
 
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const token = useStore.getState().sessionToken;
+      const res = await fetch('/api/admin/upload', { 
+        method: 'POST', 
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await res.json();
 
       if (!data.success) throw new Error(data.error || 'Upload failed');
@@ -161,14 +169,24 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
       const formData = new FormData();
       formData.append('file', file);
       formData.append('folder', 'products');
-      const uploadRes = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const token = useStore.getState().sessionToken;
+      const uploadRes = await fetch('/api/admin/upload', { 
+        method: 'POST', 
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const uploadData = await uploadRes.json();
       if (!uploadData.success) throw new Error(uploadData.error);
 
       // Step 2: Link to product
       const linkRes = await fetch(`/api/admin/products/${productId}/images`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ url: uploadData.url }),
       });
       const linkData = await linkRes.json();
@@ -184,8 +202,14 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
 
   const deleteImage = async (imageId: string) => {
     if (!confirm('Remove this image?')) return;
+    const token = useStore.getState().sessionToken;
     try {
-      const res = await fetch(`/api/admin/products/${productId}/images/${imageId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/products/${productId}/images/${imageId}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       onRefresh();

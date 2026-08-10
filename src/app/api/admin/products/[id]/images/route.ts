@@ -2,23 +2,27 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../../../db';
 import { productImages } from '../../../../../../db/schema';
 import { eq, asc } from 'drizzle-orm';
+import { requireAdmin } from '../../../../../../lib/api-auth';
 
 // GET /api/admin/products/[id]/images — list all images for a product
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAdmin(req);
     const images = await db.select()
       .from(productImages)
       .where(eq(productImages.productId, params.id))
       .orderBy(asc(productImages.sortOrder));
     return NextResponse.json({ success: true, images });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }
 
 // POST /api/admin/products/[id]/images — add an image URL to a product
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAdmin(req);
     const body = await req.json();
     const { url, sortOrder } = body;
 
@@ -52,6 +56,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 // PATCH /api/admin/products/[id]/images — reorder images (pass array of {id, sortOrder})
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
+    await requireAdmin(req);
     const body = await req.json();
     const { order } = body as { order: Array<{ id: string; sortOrder: number }> };
 
@@ -75,6 +80,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     return NextResponse.json({ success: true, images });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }

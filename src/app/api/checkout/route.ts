@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { OrderService } from '../../../core/services/OrderService';
 import { PaymentFactory } from '../../../core/adapters/payment/Gateways';
+import { requireAuth } from '../../../lib/api-auth';
 
 const orderService = new OrderService();
 
 export async function POST(req: Request) {
   try {
+    const user = await requireAuth(req);
     const body = await req.json();
-    const { userId, shippingAddressId, billingAddressId, couponCode, items, paymentGateway } = body;
+    const { shippingAddressId, billingAddressId, couponCode, items, paymentGateway } = body;
+    const userId = user.id;
 
     if (!shippingAddressId || !billingAddressId || !items || !items.length || !paymentGateway) {
       return NextResponse.json({ error: 'Missing required checkout information.' }, { status: 400 });

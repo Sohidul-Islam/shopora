@@ -4,13 +4,15 @@ import { productImages } from '../../../../../../../db/schema';
 import { eq } from 'drizzle-orm';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
+import { requireAdmin } from '../../../../../../../lib/api-auth';
 
 // DELETE /api/admin/products/[id]/images/[imageId] — remove an image from a product
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string; imageId: string } }
 ) {
   try {
+    await requireAdmin(req);
     const image = await db.select()
       .from(productImages)
       .where(eq(productImages.id, params.imageId));
@@ -35,6 +37,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Image deleted.' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : 400;
+    return NextResponse.json({ success: false, error: error.message }, { status });
   }
 }

@@ -2,20 +2,24 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../../db';
 import { banners } from '../../../../db/schema';
 import { desc, eq } from 'drizzle-orm';
+import { requireAdmin } from '../../../../lib/api-auth';
 
 // GET /api/admin/banners - list all banners
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    await requireAdmin(req);
     const list = await db.select().from(banners).orderBy(desc(banners.createdAt));
     return NextResponse.json({ success: true, banners: list });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Failed to list banners' }, { status: 400 });
+    const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : 400;
+    return NextResponse.json({ success: false, error: error.message || 'Failed to list banners' }, { status });
   }
 }
 
 // POST /api/admin/banners - create a new banner
 export async function POST(req: Request) {
   try {
+    await requireAdmin(req);
     const body = await req.json();
     const { title, subtitle, imageUrl, linkUrl, status } = body;
 
