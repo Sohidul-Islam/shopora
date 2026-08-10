@@ -17,6 +17,7 @@ import {
   Tag,
   Layers,
   Star,
+  ShoppingBag,
 } from 'lucide-react';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -447,7 +448,7 @@ function ProductListContent() {
 
   // ── page ────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 font-sans py-8 px-6 sm:px-12 lg:px-24 transition-colors duration-300">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 font-sans py-6 sm:py-8 px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-16 max-w-[1720px] mx-auto transition-colors duration-300">
       {/* Breadcrumbs */}
       <div className="flex items-center gap-2 text-xs text-slate-400 mb-6">
         <Link href="/" className="hover:text-purple-650 dark:hover:text-white transition">Home</Link>
@@ -493,9 +494,9 @@ function ProductListContent() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+      <div className="flex flex-col lg:flex-row gap-8 xl:gap-10">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block lg:col-span-1">
+        <div className="hidden lg:block w-64 xl:w-72 shrink-0">
           <div className="sticky top-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
@@ -513,7 +514,7 @@ function ProductListContent() {
         </div>
 
         {/* Products Column */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
           {/* Header row */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-4">
             <div className="text-slate-400 text-sm font-semibold">
@@ -530,7 +531,7 @@ function ProductListContent() {
             <select
               value={sortFilter}
               onChange={(e) => updateFilters({ sortBy: e.target.value })}
-              className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-white/10 text-slate-700 dark:text-slate-350 rounded-xl py-2 px-4 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer"
+              className="bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-white/10 text-slate-700 dark:text-slate-350 rounded-xl py-2 px-4 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 cursor-pointer shadow-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -572,11 +573,19 @@ function ProductListContent() {
             </div>
           )}
 
-          {/* Products grid */}
+          {/* Products grid - 4 Column Layout on large devices */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
               {[...Array(Math.min(limitFilter, 12))].map((_, i) => (
-                <div key={i} className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl h-[360px] animate-pulse" />
+                <div key={i} className="bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-3xl p-3.5 h-[340px] flex flex-col justify-between animate-pulse">
+                  <div className="w-full aspect-square rounded-2xl bg-black/5 dark:bg-white/5" />
+                  <div className="space-y-2 mt-3">
+                    <div className="h-3 w-16 bg-black/5 dark:bg-white/5 rounded-full" />
+                    <div className="h-4 w-3/4 bg-black/5 dark:bg-white/5 rounded-lg" />
+                    <div className="h-4 w-1/3 bg-black/5 dark:bg-white/5 rounded-lg" />
+                    <div className="h-9 w-full bg-black/5 dark:bg-white/5 rounded-xl mt-2" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : productsList.length === 0 ? (
@@ -589,84 +598,136 @@ function ProductListContent() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
               {productsList.map((prod) => {
                 const isWished = isInWishlist(prod.id);
                 const firstVariant = prod.productVariants?.[0];
                 const isAdded = addedItem === firstVariant?.id;
                 const rating = Number(prod.averageRating || 0);
+                const discountPct = prod.salePrice && Number(prod.price) > Number(prod.salePrice)
+                  ? Math.round(((Number(prod.price) - Number(prod.salePrice)) / Number(prod.price)) * 100)
+                  : null;
+                const brandName = prod.brand?.name || (typeof prod.brand === 'string' ? prod.brand : null);
+                const categoryName = prod.productCategories?.[0]?.category?.name || (typeof prod.category === 'string' ? prod.category : null);
+                const primaryImg = prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400';
+                const hasStock = firstVariant ? firstVariant.stock > 0 : true;
 
                 return (
                   <div
                     key={prod.id}
-                    className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 rounded-3xl p-5 flex flex-col justify-between h-[410px] relative group hover:shadow-2xl hover:shadow-purple-650/5 transition-all duration-500"
+                    className="group relative bg-white dark:bg-[#0c0d15] border border-slate-200/80 dark:border-white/[0.08] hover:border-purple-500/40 dark:hover:border-purple-500/40 rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between hover:shadow-[0_16px_35px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_35px_rgba(0,0,0,0.45)] hover:-translate-y-1 transition-all duration-300"
                   >
-                    <button
-                      onClick={() => toggleWishlist({
-                        id: prod.id,
-                        name: prod.name,
-                        price: Number(prod.salePrice ?? prod.price),
-                        image: prod.productImages?.[0]?.url || '',
-                        slug: prod.slug,
-                      })}
-                      className={`absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${
-                        isWished
-                          ? 'bg-rose-500 scale-110'
-                          : 'bg-white dark:bg-[#0c0d15] border border-black/5 dark:border-white/5 opacity-0 group-hover:opacity-100'
-                      }`}
-                    >
-                      <Heart className={`w-3.5 h-3.5 ${isWished ? 'fill-white text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                    </button>
+                    {/* Top Fitted Image Section */}
+                    <div className="relative w-full aspect-square rounded-xl sm:rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100/70 via-slate-50/50 to-transparent dark:from-white/[0.05] dark:via-white/[0.02] dark:to-transparent border border-black/[0.03] dark:border-white/[0.04] flex items-center justify-center p-3 sm:p-4 mb-3 group/img">
+                      {/* Discount Badge / Top Rated Pill */}
+                      {discountPct ? (
+                        <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                          -{discountPct}%
+                        </span>
+                      ) : rating >= 4.5 ? (
+                        <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-0.5">
+                          ★ Top
+                        </span>
+                      ) : null}
 
-                    <div className="flex-1 flex flex-col items-center justify-center p-2">
-                      <img
-                        src={prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'}
-                        alt={prod.name}
-                        className="max-h-[140px] object-contain group-hover:scale-105 transition duration-350 drop-shadow-[0_10px_20px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)]"
-                      />
-                    </div>
-
-                    <div className="mt-3 space-y-2 text-center">
-                      {/* Rating stars */}
-                      {rating > 0 && (
-                        <div className="flex items-center justify-center gap-1">
-                          <StarRating value={Math.round(rating)} />
-                          <span className="text-[10px] text-slate-400">({rating.toFixed(1)})</span>
-                        </div>
-                      )}
-
-                      <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 hover:text-purple-650 dark:hover:text-white transition">
-                        <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
-                      </h4>
-
-                      <div className="flex items-center justify-center gap-2">
-                        <p className="font-bold text-base text-slate-905 dark:text-white">
-                          {formatPrice(prod.salePrice || prod.price)}
-                        </p>
-                        {prod.salePrice && (
-                          <p className="text-xs text-slate-400 line-through">{formatPrice(prod.price)}</p>
-                        )}
-                      </div>
-
+                      {/* Wishlist Floating Button */}
                       <button
-                        onClick={() => handleAddToCartClick(prod)}
-                        disabled={firstVariant?.stock === 0}
-                        className={`w-full py-3.5 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                          isAdded
-                            ? 'bg-emerald-650 dark:bg-emerald-600 text-white'
-                            : firstVariant?.stock === 0
-                            ? 'bg-slate-200 dark:bg-white/10 text-slate-400 cursor-not-allowed'
-                            : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-200 shadow-md'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleWishlist({
+                            id: prod.id,
+                            name: prod.name,
+                            price: Number(prod.salePrice ?? prod.price),
+                            image: primaryImg,
+                            slug: prod.slug,
+                          });
+                        }}
+                        aria-label="Add to wishlist"
+                        className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-sm border ${
+                          isWished
+                            ? 'bg-rose-500 border-rose-500 text-white scale-105 shadow-rose-500/25'
+                            : 'bg-white/90 dark:bg-slate-900/90 border-slate-200/70 dark:border-white/10 text-slate-400 dark:text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-500/40 hover:scale-110'
                         }`}
                       >
-                        {isAdded ? (
-                          <><CheckCircle2 className="w-3.5 h-3.5" /><span>Added to Cart</span></>
-                        ) : firstVariant?.stock === 0 ? (
-                          <span>Out of Stock</span>
-                        ) : (
-                          <span>Buy Now</span>
-                        )}
+                        <Heart className={`w-3.5 h-3.5 ${isWished ? 'fill-white text-white' : ''}`} />
                       </button>
+
+                      {/* Product Image with Fallback and smooth scale */}
+                      <Link href={`/products/${prod.slug}`} className="w-full h-full flex items-center justify-center">
+                        <img
+                          src={primaryImg}
+                          alt={prod.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400';
+                          }}
+                          className="max-h-full max-w-full object-contain group-hover/img:scale-108 transition-transform duration-500 ease-out drop-shadow-[0_8px_16px_rgba(0,0,0,0.06)] dark:drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
+                        />
+                      </Link>
+                    </div>
+
+                    {/* Card Content Section */}
+                    <div className="flex-1 flex flex-col justify-between space-y-2.5">
+                      <div className="space-y-1.5">
+                        {/* Brand / Category Micro-Header & Rating */}
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                          <span className="truncate max-w-[120px] uppercase tracking-wider text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                            {brandName || categoryName || 'Product'}
+                          </span>
+                          {rating > 0 && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{rating.toFixed(1)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                          <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
+                        </h4>
+                      </div>
+
+                      {/* Pricing & CTA */}
+                      <div className="space-y-2.5 pt-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-base font-black text-slate-900 dark:text-white">
+                            {formatPrice(prod.salePrice || prod.price)}
+                          </span>
+                          {prod.salePrice && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500 line-through font-semibold">
+                              {formatPrice(prod.price)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action Button */}
+                        <button
+                          onClick={() => handleAddToCartClick(prod)}
+                          disabled={!hasStock}
+                          className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${
+                            isAdded
+                              ? 'bg-emerald-600 text-white'
+                              : !hasStock
+                              ? 'bg-slate-100 dark:bg-white/5 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-white/5'
+                              : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-purple-600 dark:hover:bg-slate-200 hover:shadow-md'
+                          }`}
+                        >
+                          {isAdded ? (
+                            <>
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Added to Cart</span>
+                            </>
+                          ) : !hasStock ? (
+                            <span>Out of Stock</span>
+                          ) : (
+                            <>
+                              <ShoppingBag className="w-3.5 h-3.5 opacity-80" />
+                              <span>Buy Now</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

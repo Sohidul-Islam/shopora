@@ -23,7 +23,9 @@ import {
   Zap,
   ShieldCheck,
   TrendingUp,
-  Truck
+  Truck,
+  Star,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function Home() {
@@ -346,87 +348,109 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {products.filter(p => p.salePrice).slice(0, 4).map((prod) => {
                   const isWished = isInWishlist(prod.id);
                   const variant = prod.productVariants?.[0];
                   const isAdded = addedItem === variant?.id;
                   const discountPct = Math.round(((prod.price - prod.salePrice) / prod.price) * 100);
+                  const primaryImg = prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400';
 
                   return (
-                    <div key={prod.id} className="bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 hover:border-red-500/30 rounded-3xl p-5 flex flex-col justify-between h-[410px] relative group hover:shadow-2xl hover:shadow-purple-600/5 transition-all duration-500 backdrop-blur-md">
-                      {/* Discount Badge */}
-                      <span className="absolute top-4 left-4 z-10 px-2.5 py-1 bg-red-650 dark:bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-red-600/30">
-                        -{discountPct}% OFF
-                      </span>
+                    <div
+                      key={prod.id}
+                      className="group relative bg-white dark:bg-[#0c0d15] border border-slate-200/80 dark:border-white/[0.08] hover:border-red-500/40 dark:hover:border-red-500/40 rounded-3xl p-3.5 flex flex-col justify-between hover:shadow-[0_16px_35px_rgba(239,68,68,0.08)] dark:hover:shadow-[0_16px_35px_rgba(0,0,0,0.5)] hover:-translate-y-1 transition-all duration-300"
+                    >
+                      {/* Top Fitted Image Section */}
+                      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-red-500/5 via-slate-50/50 to-transparent dark:from-white/[0.05] dark:via-white/[0.02] dark:to-transparent border border-black/[0.03] dark:border-white/[0.04] flex items-center justify-center p-4 mb-3 group/img">
+                        <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-gradient-to-r from-red-600 to-rose-600 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm shadow-red-600/30">
+                          -{discountPct}% OFF
+                        </span>
 
-                      <button
-                        onClick={() => toggleWishlist({
-                          id: prod.id,
-                          name: prod.name,
-                          slug: prod.slug,
-                          price: Number(prod.price),
-                          image: prod.productImages?.[0]?.url || ''
-                        })}
-                        className={`absolute top-4 right-4 z-10 p-2.5 rounded-2xl border transition ${
-                          isWished 
-                            ? 'text-red-500 bg-white border-red-105 shadow-lg' 
-                            : 'text-gray-400 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:text-red-500 hover:bg-white hover:border-white'
-                        }`}
-                      >
-                        <Heart className="w-3.5 h-3.5 fill-current" />
-                      </button>
-
-                      <div className="flex-1 flex flex-col items-center justify-center p-2 mt-8">
-                        <img 
-                          src={prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'} 
-                          alt={prod.name} 
-                          className="max-h-[160px] object-contain group-hover:scale-105 transition duration-500 ease-out drop-shadow-[0_15px_15px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_15px_15px_rgba(0,0,0,0.3)]" 
-                        />
-                      </div>
-
-                      <div className="mt-6 space-y-4">
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 hover:text-purple-650 dark:hover:text-white transition">
-                          <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
-                        </h4>
-                        
-                        <div className="flex items-baseline space-x-2">
-                          <span className="font-extrabold text-lg text-slate-900 dark:text-white">
-                            {formatPrice(prod.salePrice)}
-                          </span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500 line-through font-bold">
-                            {formatPrice(prod.price)}
-                          </span>
-                        </div>
-
-                        {/* Stock status indicator */}
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                            <span>Stock Left</span>
-                            <span>{variant?.stock || 5} items</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style={{ width: '40%' }}></div>
-                          </div>
-                        </div>
-                        
                         <button
-                          onClick={() => handleAddToCart(prod)}
-                          className={`w-full py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 ${
-                            isAdded 
-                              ? 'bg-emerald-650 dark:bg-emerald-600 text-white' 
-                              : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-205 shadow-lg'
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist({
+                              id: prod.id,
+                              name: prod.name,
+                              slug: prod.slug,
+                              price: Number(prod.price),
+                              image: primaryImg
+                            });
+                          }}
+                          aria-label="Wishlist"
+                          className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-sm border ${
+                            isWished 
+                              ? 'bg-red-500 border-red-500 text-white scale-105 shadow-red-500/25' 
+                              : 'bg-white/90 dark:bg-slate-900/90 border-slate-200/70 dark:border-white/10 text-slate-400 hover:text-red-500 hover:scale-110'
                           }`}
                         >
-                          {isAdded ? (
-                            <>
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Added</span>
-                            </>
-                          ) : (
-                            <span>Claim Deal</span>
-                          )}
+                          <Heart className={`w-3.5 h-3.5 ${isWished ? 'fill-white text-white' : ''}`} />
                         </button>
+
+                        <Link href={`/products/${prod.slug}`} className="w-full h-full flex items-center justify-center">
+                          <img 
+                            src={primaryImg} 
+                            alt={prod.name} 
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400';
+                            }}
+                            className="max-h-full max-w-full object-contain group-hover/img:scale-108 transition-transform duration-500 ease-out drop-shadow-[0_8px_16px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]" 
+                          />
+                        </Link>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="flex-1 flex flex-col justify-between space-y-2.5">
+                        <div className="space-y-1.5">
+                          <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug hover:text-red-500 transition">
+                            <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
+                          </h4>
+                          
+                          <div className="flex items-baseline gap-2 pt-1">
+                            <span className="font-black text-base sm:text-lg text-slate-900 dark:text-white">
+                              {formatPrice(prod.salePrice)}
+                            </span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500 line-through font-semibold">
+                              {formatPrice(prod.price)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2.5 pt-1">
+                          {/* Stock status indicator */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                              <span>Stock Left</span>
+                              <span className="text-red-500">{variant?.stock || 5} items</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style={{ width: '40%' }}></div>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={() => handleAddToCart(prod)}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${
+                              isAdded 
+                                ? 'bg-emerald-600 text-white' 
+                                : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-red-600 dark:hover:bg-slate-200 hover:text-white shadow-md'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Added to Cart</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag className="w-3.5 h-3.5 opacity-80" />
+                                <span>Claim Deal</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -539,68 +563,116 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {getTabProducts().map((prod) => {
                   const isWished = isInWishlist(prod.id);
                   const variant = prod.productVariants?.[0];
                   const isAdded = addedItem === variant?.id;
+                  const rating = Number(prod.averageRating || 0);
+                  const discountPct = prod.salePrice && Number(prod.price) > Number(prod.salePrice)
+                    ? Math.round(((Number(prod.price) - Number(prod.salePrice)) / Number(prod.price)) * 100)
+                    : null;
+                  const primaryImg = prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400';
 
                   return (
                     <motion.div 
                       layout
                       key={prod.id} 
-                      className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 rounded-3xl p-5 flex flex-col justify-between h-[390px] relative group hover:shadow-2xl hover:shadow-purple-600/5 transition-all duration-500"
+                      className="group relative bg-white dark:bg-[#0c0d15] border border-slate-200/80 dark:border-white/[0.08] hover:border-purple-500/40 dark:hover:border-purple-500/40 rounded-3xl p-3.5 flex flex-col justify-between hover:shadow-[0_16px_35px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_16px_35px_rgba(0,0,0,0.45)] hover:-translate-y-1 transition-all duration-300"
                     >
-                      <button
-                        onClick={() => toggleWishlist({
-                          id: prod.id,
-                          name: prod.name,
-                          slug: prod.slug,
-                          price: Number(prod.price),
-                          image: prod.productImages?.[0]?.url || ''
-                        })}
-                        className={`absolute top-4 right-4 z-10 p-2.5 rounded-2xl border transition ${
-                          isWished 
-                            ? 'text-red-500 bg-white border-red-100 shadow-md' 
-                            : 'text-gray-400 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 hover:text-red-500 hover:bg-white hover:border-white'
-                        }`}
-                      >
-                        <Heart className="w-3.5 h-3.5 fill-current" />
-                      </button>
+                      {/* Top Fitted Image */}
+                      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-slate-100/70 via-slate-50/50 to-transparent dark:from-white/[0.05] dark:via-white/[0.02] dark:to-transparent border border-black/[0.03] dark:border-white/[0.04] flex items-center justify-center p-4 mb-3 group/img">
+                        {discountPct ? (
+                          <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                            -{discountPct}%
+                          </span>
+                        ) : rating >= 4.5 ? (
+                          <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm flex items-center gap-0.5">
+                            ★ Top
+                          </span>
+                        ) : null}
 
-                      <div className="flex-1 flex flex-col items-center justify-center p-2 mt-4">
-                        <img 
-                          src={prod.productImages?.[0]?.url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'} 
-                          alt={prod.name} 
-                          className="max-h-[150px] object-contain group-hover:scale-105 transition duration-500 ease-out drop-shadow-[0_10px_20px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)]" 
-                        />
-                      </div>
-
-                      <div className="mt-6 space-y-3.5 text-center">
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-2 hover:text-purple-650 dark:hover:text-white transition">
-                          <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
-                        </h4>
-                        <p className="font-extrabold text-base text-slate-900 dark:text-white">
-                          {formatPrice(prod.salePrice || prod.price)}
-                        </p>
-                        
                         <button
-                          onClick={() => handleAddToCart(prod)}
-                          className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 ${
-                            isAdded 
-                              ? 'bg-emerald-650 dark:bg-emerald-600 text-white' 
-                              : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-slate-250 shadow-md'
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist({
+                              id: prod.id,
+                              name: prod.name,
+                              slug: prod.slug,
+                              price: Number(prod.price),
+                              image: primaryImg
+                            });
+                          }}
+                          aria-label="Wishlist"
+                          className={`absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 shadow-sm border ${
+                            isWished 
+                              ? 'bg-rose-500 border-rose-500 text-white scale-105 shadow-rose-500/25' 
+                              : 'bg-white/90 dark:bg-slate-900/90 border-slate-200/70 dark:border-white/10 text-slate-400 hover:text-rose-500 hover:scale-110'
                           }`}
                         >
-                          {isAdded ? (
-                            <>
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>Added</span>
-                            </>
-                          ) : (
-                            <span>Buy Now</span>
-                          )}
+                          <Heart className={`w-3.5 h-3.5 ${isWished ? 'fill-white text-white' : ''}`} />
                         </button>
+
+                        <Link href={`/products/${prod.slug}`} className="w-full h-full flex items-center justify-center">
+                          <img 
+                            src={primaryImg} 
+                            alt={prod.name} 
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400';
+                            }}
+                            className="max-h-full max-w-full object-contain group-hover/img:scale-108 transition-transform duration-500 ease-out drop-shadow-[0_8px_16px_rgba(0,0,0,0.06)] dark:drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]" 
+                          />
+                        </Link>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 flex flex-col justify-between space-y-2.5">
+                        <div className="space-y-1.5">
+                          {rating > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{rating.toFixed(1)}</span>
+                            </div>
+                          )}
+                          <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug hover:text-purple-600 dark:hover:text-white transition">
+                            <Link href={`/products/${prod.slug}`}>{prod.name}</Link>
+                          </h4>
+                        </div>
+
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-black text-base text-slate-900 dark:text-white">
+                              {formatPrice(prod.salePrice || prod.price)}
+                            </span>
+                            {prod.salePrice && (
+                              <span className="text-xs text-slate-400 dark:text-slate-500 line-through font-semibold">
+                                {formatPrice(prod.price)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={() => handleAddToCart(prod)}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${
+                              isAdded 
+                                ? 'bg-emerald-600 text-white' 
+                                : 'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-purple-600 dark:hover:bg-slate-200 hover:shadow-md'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Added to Cart</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag className="w-3.5 h-3.5 opacity-80" />
+                                <span>Buy Now</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   );
