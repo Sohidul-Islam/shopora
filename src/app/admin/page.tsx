@@ -9,7 +9,8 @@ import {
   Flame, FileText, Search, Bell, HelpCircle, Shield, 
   MapPin, CheckCircle2, ChevronRight, Copy, Download, Trash, UserCheck, Key,
   ChevronDown, DollarSign, Tag, RefreshCcw, Landmark, Users2, Calendar,
-  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X, Image as ImageIcon
+  Truck, Star, Globe, Info, Terminal, Briefcase, Mail, Send, Edit, X, Image as ImageIcon,
+  Menu, PanelLeftClose, PanelLeftOpen, ExternalLink
 } from 'lucide-react';
 import { ImageUploader, ProductImageGallery } from '../../components/admin/ImageUploader';
 import { useStore } from '../../store/useStore';
@@ -27,6 +28,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Sidebar accordion groups state
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -548,36 +551,54 @@ export default function AdminDashboard() {
         </div>
       )}
       
-      {/* 1. COLLAPSIBLE ACCORDION SIDEBAR */}
-      <aside className="w-64 bg-white dark:bg-[#0c0d15] border-r border-slate-200 dark:border-white/5 p-5 flex flex-col justify-between shrink-0 hidden md:flex transition-colors duration-300">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2 px-3">
-            <span className="text-base font-black tracking-tight text-slate-900 dark:text-white uppercase">shopora Admin</span>
+      {/* Mobile Drawer Overlay Backdrop */}
+      {mobileDrawerOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 md:hidden transition-opacity"
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+      )}
+
+      {/* Mobile Slide-Over Drawer */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-[#0c0d15] border-r border-black/10 dark:border-slate-800 p-5 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-in-out md:hidden ${
+        mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="space-y-6 overflow-y-auto pr-1">
+          <div className="flex items-center justify-between px-2 pb-3 border-b border-black/5 dark:border-white/5">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-purple-650 dark:bg-purple-600 text-white font-black flex items-center justify-center text-xs shadow-md shadow-purple-650/20">S</div>
+              <span className="text-base font-black tracking-tight text-slate-900 dark:text-white uppercase font-display">Shopora Admin</span>
+            </div>
+            <button 
+              onClick={() => setMobileDrawerOpen(false)}
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           <nav className="space-y-4">
-            {/* Dashboard Link */}
             <button 
-              onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center space-x-3 py-2 px-3 text-xs font-bold rounded-lg transition ${
-                activeTab === 'dashboard' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+              onClick={() => { setActiveTab('dashboard'); setMobileDrawerOpen(false); }}
+              className={`w-full flex items-center space-x-3 py-2.5 px-3 text-xs font-bold rounded-xl transition ${
+                activeTab === 'dashboard' ? 'bg-purple-650 dark:bg-purple-600 text-white shadow-md shadow-purple-650/20' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
               }`}
             >
               <Activity className="w-4 h-4" />
               <span>Overview Dashboard</span>
             </button>
 
-            {/* GROUP A: Sales Operations */}
+            {/* Sales Operations */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('sales')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Sales Operations</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.sales ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.sales && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'Orders List', tab: 'orders', icon: ShoppingBag },
                     { label: 'Returns & Refunds', tab: 'returns', icon: RefreshCcw },
@@ -586,9 +607,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -599,17 +620,17 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* GROUP B: Catalog Management */}
+            {/* Catalog System */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('catalog')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Catalog System</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.catalog ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.catalog && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'Products Catalogue', tab: 'products', icon: Package },
                     { label: 'Categories Tree', tab: 'categories', icon: LayoutGrid },
@@ -620,9 +641,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -633,17 +654,17 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* GROUP C: Customer Relationship */}
+            {/* Customers */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('customers')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Customers</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.customers ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.customers && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'Customer Directory', tab: 'customers', icon: Users },
                     { label: 'Customer Groups', tab: 'groups', icon: Users2 },
@@ -652,9 +673,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -665,17 +686,17 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* GROUP D: Marketing & Campaigns */}
+            {/* Marketing */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('marketing')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Marketing & SEO</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.marketing ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.marketing && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'Campaigns & Coupons', tab: 'campaigns', icon: Flame },
                     { label: 'Landing Page Builder', tab: 'landing', icon: LayoutGrid },
@@ -684,9 +705,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -697,17 +718,17 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* GROUP E: Content CMS */}
+            {/* Content CMS */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('content')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>Content CMS</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.content ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.content && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'Banners Carousel', tab: 'banners', icon: ImageIcon },
                     { label: 'FAQ Accordions', tab: 'faqs', icon: Info },
@@ -715,9 +736,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -728,17 +749,17 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* GROUP F: System & Reports */}
+            {/* System Controls */}
             <div className="space-y-1">
               <button 
                 onClick={() => toggleGroup('system')}
-                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-500 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
               >
                 <span>System Controls</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.system ? 'rotate-180' : ''}`} />
               </button>
               {openGroups.system && (
-                <div className="pl-3 space-y-1">
+                <div className="pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3">
                   {[
                     { label: 'RBAC Administrators', tab: 'users', icon: Shield },
                     { label: 'Activity Logs', tab: 'logs', icon: Terminal },
@@ -747,9 +768,9 @@ export default function AdminDashboard() {
                   ].map((sub, idx) => (
                     <button 
                       key={idx}
-                      onClick={() => setActiveTab(sub.tab)}
-                      className={`w-full flex items-center space-x-2.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg transition ${
-                        activeTab === sub.tab ? 'text-purple-650 dark:text-blue-400 bg-purple-500/5 dark:bg-blue-500/5 font-bold' : 'text-slate-600 dark:text-slate-450 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      onClick={() => { setActiveTab(sub.tab); setMobileDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-3 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                       }`}
                     >
                       <sub.icon className="w-3.5 h-3.5" />
@@ -762,35 +783,359 @@ export default function AdminDashboard() {
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-slate-200 dark:border-slate-900/60 flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-blue-650 flex items-center justify-center text-xs font-black text-white">AD</div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-855 dark:text-white leading-none">Admin User</h4>
-            <span className="text-[10px] text-slate-500">Super Administrator</span>
+        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-purple-650 text-white flex items-center justify-center text-xs font-black">AD</div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-none">Admin User</h4>
+              <span className="text-[10px] text-slate-400">Super Admin</span>
+            </div>
           </div>
+          <Link href="/" className="p-2 text-slate-400 hover:text-purple-600 transition" title="Go to Storefront">
+            <ExternalLink className="w-4 h-4" />
+          </Link>
         </div>
       </aside>
 
-      {/* 2. Main Content Frame */}
+      {/* Desktop Modern Drawer Sidebar */}
+      <aside className={`hidden md:flex flex-col justify-between bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800/80 rounded-3xl m-4 mr-0 p-4 transition-all duration-300 shadow-xl shrink-0 sticky top-4 h-[calc(100vh-2rem)] z-30 ${
+        sidebarCollapsed ? 'w-20' : 'w-64'
+      }`}>
+        <div className="space-y-5 overflow-y-auto pr-1 custom-scrollbar flex-1">
+          {/* Header & Toggle */}
+          <div className="flex items-center justify-between px-2 pt-1 pb-2">
+            {!sidebarCollapsed ? (
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-650 dark:bg-purple-600 text-white font-black flex items-center justify-center text-xs shadow-md shadow-purple-650/20">S</div>
+                <span className="text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase font-display">Shopora Admin</span>
+              </div>
+            ) : (
+              <div className="w-8 h-8 mx-auto rounded-xl bg-purple-650 dark:bg-purple-600 text-white font-black flex items-center justify-center text-xs shadow-md">S</div>
+            )}
+            <button 
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition"
+              title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4 mx-auto" /> : <PanelLeftClose className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <nav className="space-y-4">
+            {/* Dashboard Link */}
+            <button 
+              onClick={() => setActiveTab('dashboard')}
+              title={sidebarCollapsed ? "Overview Dashboard" : undefined}
+              className={`w-full flex items-center space-x-3 py-2.5 px-3 text-xs font-bold rounded-xl transition ${
+                activeTab === 'dashboard' ? 'bg-purple-650 dark:bg-purple-600 text-white shadow-md shadow-purple-650/20' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+              } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+            >
+              <Activity className="w-4 h-4 shrink-0" />
+              {!sidebarCollapsed && <span>Overview Dashboard</span>}
+            </button>
+
+            {/* Sales Operations */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('sales')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>Sales Operations</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.sales ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.sales || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'Orders List', tab: 'orders', icon: ShoppingBag },
+                    { label: 'Returns & Refunds', tab: 'returns', icon: RefreshCcw },
+                    { label: 'Invoices Audit', tab: 'invoices', icon: FileText },
+                    { label: 'Payments Logs', tab: 'payments', icon: Landmark }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Catalog System */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('catalog')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>Catalog System</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.catalog ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.catalog || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'Products Catalogue', tab: 'products', icon: Package },
+                    { label: 'Categories Tree', tab: 'categories', icon: LayoutGrid },
+                    { label: 'Brand Partners', tab: 'brands', icon: Award },
+                    { label: 'Depots & Warehouses', tab: 'warehouses', icon: MapPin },
+                    { label: 'Stock Transfers', tab: 'transfers', icon: RefreshCw },
+                    { label: 'Suppliers Registry', tab: 'suppliers', icon: Briefcase }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Customers */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('customers')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>Customers</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.customers ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.customers || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'Customer Directory', tab: 'customers', icon: Users },
+                    { label: 'Customer Groups', tab: 'groups', icon: Users2 },
+                    { label: 'Product Reviews', tab: 'reviews', icon: Star },
+                    { label: 'Support Tickets', tab: 'tickets', icon: HelpCircle }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Marketing */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('marketing')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>Marketing & SEO</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.marketing ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.marketing || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'Campaigns & Coupons', tab: 'campaigns', icon: Flame },
+                    { label: 'Landing Page Builder', tab: 'landing', icon: LayoutGrid },
+                    { label: 'Blog Articles', tab: 'blog', icon: BookOpen },
+                    { label: 'SEO Metadata', tab: 'seo', icon: Globe }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Content CMS */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('content')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>Content CMS</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.content ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.content || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'Banners Carousel', tab: 'banners', icon: ImageIcon },
+                    { label: 'FAQ Accordions', tab: 'faqs', icon: Info },
+                    { label: 'Announcements', tab: 'announcements', icon: Bell }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* System Controls */}
+            <div className="space-y-1">
+              {!sidebarCollapsed && (
+                <button 
+                  onClick={() => toggleGroup('system')}
+                  className="w-full flex items-center justify-between py-1.5 px-3 text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-widest hover:text-slate-900 dark:hover:text-white transition"
+                >
+                  <span>System Controls</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${openGroups.system ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+              {(openGroups.system || sidebarCollapsed) && (
+                <div className={`${sidebarCollapsed ? 'space-y-1' : 'pl-3 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-3'}`}>
+                  {[
+                    { label: 'RBAC Administrators', tab: 'users', icon: Shield },
+                    { label: 'Activity Logs', tab: 'logs', icon: Terminal },
+                    { label: 'Store Settings', tab: 'settings', icon: Settings },
+                    { label: 'Analytics Reports', tab: 'analytics', icon: TrendingUp }
+                  ].map((sub, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTab(sub.tab)}
+                      title={sidebarCollapsed ? sub.label : undefined}
+                      className={`w-full flex items-center space-x-2.5 py-2 px-2.5 text-xs font-semibold rounded-xl transition ${
+                        activeTab === sub.tab ? 'text-purple-650 dark:text-purple-400 bg-purple-500/10 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
+                      } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
+                    >
+                      <sub.icon className="w-3.5 h-3.5 shrink-0" />
+                      {!sidebarCollapsed && <span>{sub.label}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
+
+        {/* Desktop Drawer Footer */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          {!sidebarCollapsed ? (
+            <>
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-purple-650 text-white flex items-center justify-center text-xs font-black shadow-sm">AD</div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-none">Admin User</h4>
+                  <span className="text-[10px] text-slate-400">Super Admin</span>
+                </div>
+              </div>
+              <Link href="/" className="p-2 text-slate-400 hover:text-purple-600 transition" title="Go to Storefront">
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            </>
+          ) : (
+            <Link href="/" className="p-2 mx-auto text-slate-400 hover:text-purple-600 transition" title="Go to Storefront">
+              <ExternalLink className="w-4 h-4" />
+            </Link>
+          )}
+        </div>
+      </aside>
+
+      {/* 2. Main Right Content Frame */}
       <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Top Header */}
-        <header className="glass border-b border-slate-200 dark:border-slate-900/60 py-4 px-6 sm:px-10 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center space-x-4 flex-1">
+        {/* Modern Sticky Glassmorphic Top Navbar */}
+        <header className="sticky top-0 z-20 bg-white/85 dark:bg-[#05060b]/85 backdrop-blur-xl border-b border-black/5 dark:border-white/5 py-3.5 px-4 sm:px-8 flex items-center justify-between transition-all duration-300 shadow-sm">
+          <div className="flex items-center space-x-3 flex-1">
+            {/* Mobile Drawer Trigger */}
+            <button 
+              onClick={() => setMobileDrawerOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition"
+              aria-label="Open Mobile Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Desktop Expand Button when collapsed */}
+            {sidebarCollapsed && (
+              <button 
+                onClick={() => setSidebarCollapsed(false)}
+                className="hidden md:flex p-2 rounded-xl border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition"
+                title="Expand Drawer Sidebar"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Active Tab Breadcrumb Badge */}
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="hidden sm:inline text-slate-400 dark:text-slate-500 font-semibold">Admin Panel</span>
+              <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-slate-400" />
+              <span className="capitalize px-2.5 py-1 bg-purple-500/10 dark:bg-purple-500/15 text-purple-650 dark:text-purple-400 rounded-lg border border-purple-500/20 font-display">
+                {activeTab}
+              </span>
+            </div>
+
+            {/* Global Command Search trigger pill */}
             <button 
               onClick={() => setPaletteOpen(true)}
-              className="flex items-center space-x-2.5 bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl py-2 px-4 max-w-md w-full text-slate-500 hover:text-slate-400 text-xs transition"
+              className="hidden lg:flex items-center space-x-2.5 bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-2xl py-2 px-4 max-w-sm w-full text-xs transition shadow-inner"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400" />
               <span>Global Search... (Press ⌘+K)</span>
             </button>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <span className="hidden sm:inline-flex items-center space-x-1.5 text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold uppercase px-2.5 py-1 rounded-lg">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => setPaletteOpen(true)}
+              className="lg:hidden p-2 rounded-xl border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition"
+              aria-label="Search Palette"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
+            <span className="hidden sm:inline-flex items-center space-x-1.5 text-[10px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-extrabold uppercase px-2.5 py-1 rounded-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
               <span>Live Mode</span>
             </span>
+
+            <Link 
+              href="/" 
+              className="hidden sm:inline-flex items-center space-x-1.5 text-xs font-semibold py-2 px-3 rounded-xl border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Storefront</span>
+            </Link>
           </div>
         </header>
 
@@ -808,17 +1153,17 @@ export default function AdminDashboard() {
               {/* Metrics Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { name: 'Revenue Today', value: formatPrice(metrics.revenueToday), icon: TrendingUp, color: 'text-emerald-400' },
-                  { name: 'Total Orders', value: metrics.ordersCount, icon: ShoppingBag, color: 'text-blue-400' },
-                  { name: 'Average Order Value', value: formatPrice(metrics.aov), icon: Package, color: 'text-purple-400' },
-                  { name: 'Abandonment Rate', value: metrics.abandonmentRate, icon: Users, color: 'text-rose-400' }
+                  { name: 'Revenue Today', value: formatPrice(metrics.revenueToday), icon: TrendingUp, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
+                  { name: 'Total Orders', value: metrics.ordersCount, icon: ShoppingBag, color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10' },
+                  { name: 'Average Order Value', value: formatPrice(metrics.aov), icon: Package, color: 'text-purple-600 dark:text-purple-400 bg-purple-500/10' },
+                  { name: 'Abandonment Rate', value: metrics.abandonmentRate, icon: Users, color: 'text-rose-600 dark:text-rose-400 bg-rose-500/10' }
                 ].map((m, idx) => (
-                  <div key={idx} className="glass rounded-2xl p-5 border border-slate-850 flex items-center justify-between shadow-lg shadow-black/10">
+                  <div key={idx} className="bg-white dark:bg-[#0c0d15] rounded-2xl p-5 border border-black/10 dark:border-slate-800/80 flex items-center justify-between shadow-sm transition-colors duration-300">
                     <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">{m.name}</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider">{m.name}</span>
                       <span className="text-2xl font-bold block text-slate-900 dark:text-white font-display">{m.value}</span>
                     </div>
-                    <div className={`w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center border border-slate-200 dark:border-slate-800 ${m.color}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-black/5 dark:border-white/5 ${m.color}`}>
                       <m.icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -827,15 +1172,15 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Orders Table */}
-                <div className="lg:col-span-2 glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-900 pb-3">
-                    <h3 className="font-bold text-slate-855 dark:text-white text-base font-display">Recent Order Management</h3>
-                    <button onClick={() => setActiveTab('orders')} className="text-xs text-blue-400 font-bold hover:underline">View All Orders &rarr;</button>
+                <div className="lg:col-span-2 bg-white dark:bg-[#0c0d15] rounded-3xl p-6 border border-black/10 dark:border-slate-800/80 space-y-4 shadow-sm transition-colors duration-300">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base font-display">Recent Order Management</h3>
+                    <button onClick={() => setActiveTab('orders')} className="text-xs text-purple-600 dark:text-purple-400 font-bold hover:underline">View All Orders &rarr;</button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
+                        <tr className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-extrabold uppercase tracking-wider">
                           <th className="py-2.5">Order ID</th>
                           <th className="py-2.5">Customer</th>
                           <th className="py-2.5">Gateway</th>
@@ -843,16 +1188,16 @@ export default function AdminDashboard() {
                           <th className="py-2.5">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {ordersList.map(o => (
                           <tr key={o.id} className="text-slate-700 dark:text-slate-300 font-semibold">
-                            <td className="py-3 font-mono text-blue-400">{o.id}</td>
+                            <td className="py-3 font-mono text-purple-600 dark:text-purple-400">{o.id}</td>
                             <td className="py-3">{o.customer}</td>
                             <td className="py-3">{o.gateway}</td>
-                            <td className="py-3">{formatPrice(o.total)}</td>
+                            <td className="py-3 font-bold text-slate-900 dark:text-white">{formatPrice(o.total)}</td>
                             <td className="py-3">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                o.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                                o.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                               }`}>{o.status}</span>
                             </td>
                           </tr>
@@ -863,19 +1208,19 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* System Low Stock widget */}
-                <div className="glass rounded-3xl p-6 border border-slate-850 space-y-4 shadow-lg shadow-black/10">
-                  <h3 className="font-bold text-slate-855 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-200 dark:border-slate-900 pb-3 flex items-center space-x-2">
+                <div className="bg-white dark:bg-[#0c0d15] rounded-3xl p-6 border border-black/10 dark:border-slate-800/80 space-y-4 shadow-sm transition-colors duration-300">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base font-display border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center space-x-2">
                     <AlertTriangle className="w-4 h-4 text-amber-500" />
                     <span>Low Stock Inventory</span>
                   </h3>
                   <div className="space-y-3">
                     {productsList.filter(p => p.stock < 6).map(p => (
-                      <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
+                      <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs">
                         <div>
-                          <h4 className="font-bold text-slate-855 dark:text-white truncate max-w-[150px]">{p.name}</h4>
-                          <span className="text-[10px] text-slate-500 font-mono">{p.sku}</span>
+                          <h4 className="font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{p.name}</h4>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{p.sku}</span>
                         </div>
-                        <span className="px-2 py-0.5 rounded font-black bg-rose-500/10 text-rose-400">{p.stock} left</span>
+                        <span className="px-2 py-0.5 rounded font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">{p.stock} left</span>
                       </div>
                     ))}
                   </div>
@@ -2028,18 +2373,18 @@ export default function AdminDashboard() {
 
       {/* 3. Global Command Palette Modal */}
       {paletteOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800/50 rounded-3xl p-6 max-w-lg w-full relative shadow-2xl shadow-black/80 space-y-4">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full relative shadow-2xl space-y-4 transition-colors duration-300">
             <button 
               onClick={() => setPaletteOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg p-2"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white font-bold text-lg p-2 transition"
             >
-              &times;
+              <X className="w-5 h-5" />
             </button>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-black font-display text-white">Global Command Palette Search</h3>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Search page tabs instantly</p>
+              <h3 className="text-lg font-black font-display text-slate-900 dark:text-white">Global Command Palette Search</h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">Search page tabs instantly</p>
             </div>
 
             <input 
@@ -2048,7 +2393,7 @@ export default function AdminDashboard() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Type page name (e.g. invoices, suppliers, logs, seo)..."
-              className="w-full bg-white dark:bg-[#0a0c14] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl p-3 text-xs focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
             />
 
             <div className="max-h-[250px] overflow-y-auto space-y-1.5 pt-2">
@@ -2062,18 +2407,18 @@ export default function AdminDashboard() {
                   }}
                   className="w-full text-left p-3 hover:bg-slate-100 dark:hover:bg-slate-900/60 rounded-xl flex justify-between items-center transition text-xs text-slate-800 dark:text-slate-200"
                 >
-                  <span className="font-bold text-slate-855 dark:text-white">{lnk.title}</span>
-                  <span className="text-[10px] bg-slate-900 border border-slate-850 px-2 py-0.5 rounded-lg text-slate-400 uppercase font-black">{lnk.category}</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{lnk.title}</span>
+                  <span className="text-[10px] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-lg text-slate-500 dark:text-slate-400 uppercase font-black">{lnk.category}</span>
                 </button>
               ))}
               {filteredPaletteLinks.length === 0 && (
-                <p className="text-xs text-slate-500 text-center py-4">No matching page actions found.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-4">No matching page actions found.</p>
               )}
             </div>
 
-            <div className="border-t border-slate-200 dark:border-slate-900 pt-3 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
-              <span>Use arrow keys to navigate (mocked)</span>
-              <span>ESC to exit</span>
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-center text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+              <span>Use arrow keys to navigate</span>
+              <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-slate-500 dark:text-slate-400 font-mono">ESC to exit</kbd>
             </div>
           </div>
         </div>
@@ -2082,29 +2427,29 @@ export default function AdminDashboard() {
       {/* 4. CRUD Modals */}
       {/* Product Add/Edit Modal */}
       {showProductModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-2xl w-full relative space-y-5 shadow-2xl my-4">
-            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-2xl w-full relative space-y-5 shadow-2xl my-4 text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
-              <h3 className="text-xl font-black font-display text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">All fields marked * are required. Changes persist to the database.</p>
+              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">All fields marked * are required. Changes persist to the database.</p>
             </div>
 
-            <form onSubmit={saveProduct} className="space-y-4 text-xs font-semibold text-slate-400">
+            <form onSubmit={saveProduct} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
               {/* Row 1: Name + Slug */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">Product Name *</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Product Name *</label>
                   <input type="text" required value={prodForm.name}
                     onChange={(e) => setProdForm({ ...prodForm, name: e.target.value, slug: editingProduct ? prodForm.slug : toSlug(e.target.value) })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="e.g. Sony WH-1000XM5" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block">URL Slug *</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">URL Slug *</label>
                   <input type="text" required value={prodForm.slug}
                     onChange={(e) => setProdForm({ ...prodForm, slug: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="e.g. sony-wh-1000xm5" />
                 </div>
               </div>
@@ -2112,18 +2457,18 @@ export default function AdminDashboard() {
               {/* Row 2: SKU + Brand */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">SKU Code *</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">SKU Code *</label>
                   <input type="text" required value={prodForm.sku}
                     onChange={(e) => setProdForm({ ...prodForm, sku: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="e.g. SONY-XM5-BLK" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block">Brand</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Brand</label>
                   <select value={prodForm.brandId} onChange={(e) => setProdForm({ ...prodForm, brandId: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-                    <option value="">— No Brand —</option>
-                    {brandsList.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                    <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">— No Brand —</option>
+                    {brandsList.map((b: any) => <option key={b.id} value={b.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{b.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -2131,68 +2476,68 @@ export default function AdminDashboard() {
               {/* Row 3: Price + Sale Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">Regular Price * ($)</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Regular Price * ($)</label>
                   <input type="number" required step="0.01" value={prodForm.price}
                     onChange={(e) => setProdForm({ ...prodForm, price: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="0.00" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block">Sale Price ($) <span className="text-slate-600 font-normal">(optional)</span></label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Sale Price ($) <span className="text-slate-400 font-normal">(optional)</span></label>
                   <input type="number" step="0.01" value={prodForm.salePrice}
                     onChange={(e) => setProdForm({ ...prodForm, salePrice: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="0.00" />
                 </div>
               </div>
 
               {/* Description */}
               <div className="space-y-1">
-                <label className="block">Description</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Description</label>
                 <textarea value={prodForm.description}
                   onChange={(e) => setProdForm({ ...prodForm, description: e.target.value })}
                   rows={3}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors resize-none"
                   placeholder="Product description..." />
               </div>
 
               {/* Categories */}
               <div className="space-y-1">
-                <label className="block">Categories <span className="text-slate-600 font-normal">(hold Ctrl/Cmd to multi-select)</span></label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Categories <span className="text-slate-400 font-normal">(hold Ctrl/Cmd to multi-select)</span></label>
                 <select multiple value={prodForm.categoryIds}
                   onChange={(e) => setProdForm({ ...prodForm, categoryIds: Array.from(e.target.selectedOptions, o => o.value) })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-2 text-white focus:outline-none focus:border-blue-500" style={{ height: '100px' }}>
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors" style={{ height: '100px' }}>
                   {categoriesList.map((c: any) => (
-                    <option key={c.id} value={c.id}>{c.parentId ? '↳ ' : ''}{c.name}</option>
+                    <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.parentId ? '↳ ' : ''}{c.name}</option>
                   ))}
                 </select>
               </div>
 
               {/* Status */}
               <div className="space-y-1">
-                <label className="block">Publication Status *</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Publication Status *</label>
                 <select value={prodForm.status} onChange={(e) => setProdForm({ ...prodForm, status: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-                  <option value="DRAFT">DRAFT — not visible to customers</option>
-                  <option value="PUBLISHED">PUBLISHED — live on storefront</option>
-                  <option value="OUT_OF_STOCK">OUT_OF_STOCK — shown but unavailable</option>
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                  <option value="DRAFT" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">DRAFT — not visible to customers</option>
+                  <option value="PUBLISHED" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">PUBLISHED — live on storefront</option>
+                  <option value="OUT_OF_STOCK" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">OUT_OF_STOCK — shown but unavailable</option>
                 </select>
               </div>
 
               {/* Product Image Gallery — shown when editing OR after product is created */}
               {editingProduct && (
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-900">
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
                   <ProductImageGallery
                     productId={editingProduct.id}
                     images={productImages}
                     onRefresh={() => fetchProductImages(editingProduct.id)}
                   />
-                  <p className="text-[10px] text-slate-600 mt-1">Tip: Save the product first, then upload images. First image becomes the primary display image.</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Tip: Save the product first, then upload images. First image becomes the primary display image.</p>
                 </div>
               )}
 
               <button type="submit" disabled={prodFormSaving}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
                 {prodFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
                 <span>{prodFormSaving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create Product'}</span>
               </button>
@@ -2203,57 +2548,57 @@ export default function AdminDashboard() {
 
       {/* Category Add/Edit Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-lg w-full relative space-y-5 shadow-2xl">
-            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-lg w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
-              <h3 className="text-xl font-black font-display text-white">{editingCategory ? 'Edit Category' : 'Add Category / Sub-category'}</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Leave Parent empty to create a root category. Select a parent to make it a sub-category.</p>
+              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingCategory ? 'Edit Category' : 'Add Category / Sub-category'}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Leave Parent empty to create a root category. Select a parent to make it a sub-category.</p>
             </div>
 
-            <form onSubmit={saveCategory} className="space-y-4 text-xs font-semibold text-slate-400">
+            <form onSubmit={saveCategory} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block">Category Name *</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Category Name *</label>
                   <input type="text" required value={catForm.name}
                     onChange={(e) => setCatForm({ ...catForm, name: e.target.value, slug: editingCategory ? catForm.slug : toSlug(e.target.value) })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="e.g. Electronics" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block">Slug *</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Slug *</label>
                   <input type="text" required value={catForm.slug}
                     onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })}
-                    className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="e.g. electronics" />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block">Parent Category <span className="text-slate-600 font-normal">(leave empty for root)</span></label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Parent Category <span className="text-slate-400 font-normal">(leave empty for root)</span></label>
                 <select value={catForm.parentId}
                   onChange={(e) => setCatForm({ ...catForm, parentId: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-                  <option value="">— Root (no parent) —</option>
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                  <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">— Root (no parent) —</option>
                   {categoriesList.filter(c => !c.parentId && c.id !== editingCategory?.id).map((c: any) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.name}</option>
                   ))}
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                  <input type="checkbox" checked={catForm.visible} onChange={(e) => setCatForm({ ...catForm, visible: e.target.checked })} className="accent-blue-500" />
+                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
+                  <input type="checkbox" checked={catForm.visible} onChange={(e) => setCatForm({ ...catForm, visible: e.target.checked })} className="accent-purple-650 dark:accent-purple-500" />
                   <span>Visible on storefront</span>
                 </label>
-                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                <label className="flex items-center space-x-3 cursor-pointer p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
                   <input type="checkbox" checked={catForm.featured} onChange={(e) => setCatForm({ ...catForm, featured: e.target.checked })} className="accent-amber-500" />
                   <span>Featured category</span>
                 </label>
               </div>
 
               <button type="submit" disabled={catFormSaving}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
                 {catFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
                 <span>{catFormSaving ? 'Saving...' : editingCategory ? 'Save Changes' : catForm.parentId ? 'Create Sub-category' : 'Create Category'}</span>
               </button>
@@ -2264,39 +2609,39 @@ export default function AdminDashboard() {
 
       {/* Brand Add/Edit Modal */}
       {showBrandModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl">
-            <button onClick={() => setShowBrandModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowBrandModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
-              <h3 className="text-xl font-black font-display text-white">{editingBrand ? 'Edit Brand' : 'Register Brand Partner'}</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Brand slug is used in product URLs and storefront filters.</p>
+              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingBrand ? 'Edit Brand' : 'Register Brand Partner'}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Brand slug is used in product URLs and storefront filters.</p>
             </div>
 
-            <form onSubmit={saveBrand} className="space-y-4 text-xs font-semibold text-slate-400">
+            <form onSubmit={saveBrand} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <div className="space-y-1">
-                <label className="block">Brand Name *</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Brand Name *</label>
                 <input type="text" required value={brandForm.name}
                   onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value, slug: editingBrand ? brandForm.slug : toSlug(e.target.value) })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. Sony Electronics" />
               </div>
               <div className="space-y-1">
-                <label className="block">URL Slug *</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">URL Slug *</label>
                 <input type="text" required value={brandForm.slug}
                   onChange={(e) => setBrandForm({ ...brandForm, slug: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white font-mono focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. sony" />
               </div>
               <div className="space-y-1">
-                <label className="block">Status</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Status</label>
                 <select value={brandForm.status} onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-                  <option value="ACTIVE">ACTIVE — visible in storefront filters</option>
-                  <option value="INACTIVE">INACTIVE — hidden from customers</option>
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                  <option value="ACTIVE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">ACTIVE — visible in storefront filters</option>
+                  <option value="INACTIVE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">INACTIVE — hidden from customers</option>
                 </select>
               </div>
               <button type="submit" disabled={brandFormSaving}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
                 {brandFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
                 <span>{brandFormSaving ? 'Saving...' : editingBrand ? 'Save Changes' : 'Register Brand'}</span>
               </button>
@@ -2306,53 +2651,53 @@ export default function AdminDashboard() {
       )}
       {/* Banner Add/Edit Modal */}
       {showBannerModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass border border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl">
-            <button onClick={() => setShowBannerModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowBannerModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
-              <h3 className="text-xl font-black font-display text-white">{editingBanner ? 'Edit Banner Slide' : 'Create Banner Slide'}</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Upload or specify a banner image and configure links for campaigns.</p>
+              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingBanner ? 'Edit Banner Slide' : 'Create Banner Slide'}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Upload or specify a banner image and configure links for campaigns.</p>
             </div>
 
-            <form onSubmit={saveBanner} className="space-y-4 text-xs font-semibold text-slate-400">
+            <form onSubmit={saveBanner} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <div className="space-y-1">
-                <label className="block">Banner Title *</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Banner Title *</label>
                 <input type="text" required value={bannerForm.title}
                   onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. Introducing iPhone 15 Pro" />
               </div>
               <div className="space-y-1">
-                <label className="block">Subtitle / Description</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Subtitle / Description</label>
                 <input type="text" value={bannerForm.subtitle}
                   onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. Titanium design, ultimate A17 Pro chip." />
               </div>
               <div className="space-y-1">
-                <label className="block">Banner Image URL *</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Banner Image URL *</label>
                 <input type="text" required value={bannerForm.imageUrl}
                   onChange={(e) => setBannerForm({ ...bannerForm, imageUrl: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. https://images.unsplash.com/..." />
               </div>
               <div className="space-y-1">
-                <label className="block">Link Destination URL</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Link Destination URL</label>
                 <input type="text" value={bannerForm.linkUrl}
                   onChange={(e) => setBannerForm({ ...bannerForm, linkUrl: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. /products/iphone-15-pro-max" />
               </div>
               <div className="space-y-1">
-                <label className="block">Publication Status</label>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Publication Status</label>
                 <select value={bannerForm.status} onChange={(e) => setBannerForm({ ...bannerForm, status: e.target.value })}
-                  className="w-full bg-[#080a12] border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-blue-500">
-                  <option value="ACTIVE">ACTIVE — visible on storefront hero carousel</option>
-                  <option value="INACTIVE">INACTIVE — hidden from users</option>
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                  <option value="ACTIVE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">ACTIVE — visible on storefront hero carousel</option>
+                  <option value="INACTIVE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">INACTIVE — hidden from users</option>
                 </select>
               </div>
               <button type="submit" disabled={bannerFormSaving}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
                 {bannerFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
                 <span>{bannerFormSaving ? 'Saving...' : editingBanner ? 'Save Changes' : 'Create Banner'}</span>
               </button>
