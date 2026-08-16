@@ -184,16 +184,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           {/* Attributes short list */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
-              { label: 'Screen size', val: '6.7"' },
-              { label: 'CPU', val: 'Octa-Core' },
-              { label: 'Battery', val: '4323 mAh' },
-              { label: 'Main camera', val: '48 MP' },
-              { label: 'Front camera', val: '12 MP' },
-              { label: 'Warranty', val: '1 Year' },
+              { label: 'SKU Code', val: selectedVariant?.sku || product.sku },
+              { label: 'Brand Partner', val: product.brand?.name || 'Shopora' },
+              { label: 'Primary Category', val: product.productCategories?.[0]?.category?.name || 'General Catalogue' },
+              { label: 'Stock Level', val: `${selectedVariant?.stock ?? product.stock ?? 10} units available` },
+              { label: 'Dispatch', val: 'Ships within 24h' },
+              { label: 'Warranty', val: '1 Year Full Warranty' },
             ].map((spec, i) => (
               <div key={i} className="bg-white dark:bg-white/5 rounded-2xl p-3 border border-black/5 dark:border-white/10 flex flex-col justify-center">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{spec.label}</span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{spec.val}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">{spec.label}</span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{spec.val}</span>
               </div>
             ))}
           </div>
