@@ -8,6 +8,7 @@ import {
   Eye, Edit3, Layers, Sparkles, Check, ChevronRight, AlertCircle, FileText, ExternalLink, ShoppingBag
 } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { formatPrice } from '../../lib/utils';
 
 export interface CmsBlock {
   id: string;
@@ -827,7 +828,7 @@ export default function CmsSectionBuilder({ blocks, onChange, productsList = [] 
                     <div>
                       <span className="text-[10px] font-extrabold uppercase text-purple-600 dark:text-purple-400 tracking-wider">Featured Store Product</span>
                       <h4 className="text-base font-extrabold text-slate-900 dark:text-white line-clamp-1">{block.productName || 'Sample Product'}</h4>
-                      <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5">${block.productPrice || '29.99'}</p>
+                      <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5">{formatPrice(block.productPrice || '29.99')}</p>
                     </div>
                   </div>
                   <a

@@ -2793,14 +2793,14 @@ export default function AdminDashboard() {
               {/* Row 3: Price + Sale Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Regular Price * ($)</label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Regular Price * (BDT)</label>
                   <input type="number" required step="0.01" value={prodForm.price}
                     onChange={(e) => setProdForm({ ...prodForm, price: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                     placeholder="0.00" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Sale Price ($) <span className="text-slate-400 font-normal">(optional)</span></label>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Sale Price (BDT) <span className="text-slate-400 font-normal">(optional)</span></label>
                   <input type="number" step="0.01" value={prodForm.salePrice}
                     onChange={(e) => setProdForm({ ...prodForm, salePrice: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"

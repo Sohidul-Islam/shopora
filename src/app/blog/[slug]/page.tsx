@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Calendar, User, Clock, ArrowLeft, Share2, AlertCircle, ExternalLink, ShoppingBag } from 'lucide-react';
 import { CmsBlock } from '../../../components/admin/CmsSectionBuilder';
+import { formatPrice } from '../../../lib/utils';
 
 export const revalidate = 60; // ISR validation
 
@@ -123,7 +124,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                       <div className="space-y-1">
                         <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 tracking-wider">Featured Store Product</span>
                         <h4 className="text-lg font-black text-slate-900 dark:text-white line-clamp-1">{block.productName || 'Sample Product'}</h4>
-                        <p className="text-base font-black text-slate-900 dark:text-white">${block.productPrice || '29.99'}</p>
+                        <p className="text-base font-black text-slate-900 dark:text-white">{formatPrice(block.productPrice || '29.99')}</p>
                       </div>
                     </div>
                     <Link
