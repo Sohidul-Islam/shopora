@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { formatPrice } from '../../lib/utils';
 import { useStore, CartItem } from '../../store/useStore';
@@ -161,12 +161,80 @@ function ProductListContent() {
     minRating,
   ].filter(Boolean).length;
 
-  const filteredBrands = brandsList.filter((b) =>
-    b.name.toLowerCase().includes(brandSearch.toLowerCase())
-  );
-  const filteredCats = categoriesList.filter(
-    (c) => !c.parentId && c.name.toLowerCase().includes(catSearch.toLowerCase())
-  );
+  // Category expansion state for accordion tree
+  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>({});
+  const toggleCatExpand = (catId: string) => {
+    setExpandedCats((prev) => ({ ...prev, [catId]: !prev[catId] }));
+  };
+
+  // Build hierarchical category tree: parent categories with nested subcategories
+  const categoryTree = useMemo(() => {
+    const parentMap = new Map<string, any>();
+    const childrenMap = new Map<string, any[]>();
+    const orphanChildren: any[] = [];
+
+    categoriesList.forEach((c) => {
+      if (!c.parentId) {
+        parentMap.set(c.id, { ...c, subCategories: [] });
+      } else {
+        const list = childrenMap.get(c.parentId) || [];
+        list.push(c);
+        childrenMap.set(c.parentId, list);
+      }
+    });
+
+    parentMap.forEach((parent, parentId) => {
+      if (childrenMap.has(parentId)) {
+        parent.subCategories = childrenMap.get(parentId)!;
+      }
+    });
+
+    categoriesList.forEach((c) => {
+      if (c.parentId && !parentMap.has(c.parentId)) {
+        orphanChildren.push(c);
+      }
+    });
+
+    const roots = Array.from(parentMap.values());
+    if (orphanChildren.length > 0) {
+      roots.push(...orphanChildren.map((orphan) => ({ ...orphan, subCategories: [] })));
+    }
+
+    return roots;
+  }, [categoriesList]);
+
+  // Smooth Category & Sub-category Search filtering
+  const filteredCategoryTree = useMemo(() => {
+    const query = catSearch.trim().toLowerCase();
+    if (!query) return categoryTree;
+
+    return categoryTree
+      .map((parent) => {
+        const parentMatch = parent.name.toLowerCase().includes(query) || parent.slug.toLowerCase().includes(query);
+        const matchingSubs = (parent.subCategories || []).filter((sub: any) =>
+          sub.name.toLowerCase().includes(query) || sub.slug.toLowerCase().includes(query)
+        );
+
+        if (parentMatch || matchingSubs.length > 0) {
+          return {
+            ...parent,
+            subCategories: parentMatch ? parent.subCategories : matchingSubs,
+            isSearching: true,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }, [categoryTree, catSearch]);
+
+  // Smooth Brand Search filtering
+  const filteredBrands = useMemo(() => {
+    const query = brandSearch.trim().toLowerCase();
+    if (!query) return brandsList;
+    return brandsList.filter(
+      (b) => b.name.toLowerCase().includes(query) || b.slug.toLowerCase().includes(query)
+    );
+  }, [brandsList, brandSearch]);
 
   const handleAddToCartClick = (prod: any) => {
     const variant = prod.productVariants?.[0];
@@ -239,23 +307,39 @@ function ProductListContent() {
           onClick={() => toggleAccordion('category')}
           className="w-full flex items-center justify-between font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider py-2"
         >
-          <span>Category</span>
+          <div className="flex items-center gap-2">
+            <span>Category</span>
+            {categoryFilter && (
+              <span className="px-1.5 py-0.5 bg-purple-600 text-white rounded-full text-[9px] font-extrabold">1</span>
+            )}
+          </div>
           {openAccordions.category ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
+
         {openAccordions.category && (
           <div className="mt-3 space-y-2">
+            {/* Search Input with smooth clear button */}
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={catSearch}
                 onChange={(e) => setCatSearch(e.target.value)}
-                placeholder="Search category"
-                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                placeholder="Search category or subcategory..."
+                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
               />
+              {catSearch && (
+                <button
+                  onClick={() => setCatSearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+
             {/* All categories option */}
-            <label className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer py-0.5">
+            <label className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer py-1 px-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition">
               <div className="flex items-center gap-2.5">
                 <input
                   type="radio"
@@ -266,31 +350,86 @@ function ProductListContent() {
                 />
                 <span className="text-slate-800 dark:text-white font-bold">All Categories</span>
               </div>
-              <span className="text-slate-400 text-[10px]">{totalProducts}</span>
+              <span className="text-slate-400 text-[10px] bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded-full">{totalProducts}</span>
             </label>
-            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-              {filteredCats.length === 0 && (
-                <p className="text-xs text-slate-400 py-2">No categories found</p>
-              )}
-              {filteredCats.map((cat) => (
-                <label key={cat.id} className="flex items-center text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer py-0.5 group">
-                  <div className="flex items-center gap-2.5 flex-1">
-                    <input
-                      type="radio"
-                      name="category"
-                      checked={categoryFilter === cat.slug}
-                      onChange={() => updateFilters({ category: categoryFilter === cat.slug ? '' : cat.slug })}
-                      className="w-4 h-4 accent-purple-600 cursor-pointer"
-                    />
-                    <div className="flex items-center gap-1.5">
-                      {cat.iconUrl && (
-                        <img src={cat.iconUrl} alt={cat.name} className="w-4 h-4 rounded object-cover opacity-70 group-hover:opacity-100 transition" />
+
+            {/* Category & Subcategory Tree */}
+            <div className="space-y-1 max-h-64 overflow-y-auto pr-1 text-xs">
+              {filteredCategoryTree.length === 0 ? (
+                <p className="text-xs text-slate-400 py-3 text-center">No categories found matching "{catSearch}"</p>
+              ) : (
+                filteredCategoryTree.map((cat: any) => {
+                  const isParentSelected = categoryFilter === cat.slug;
+                  const hasSubs = cat.subCategories && cat.subCategories.length > 0;
+                  const isExpanded = cat.isSearching || expandedCats[cat.id] || cat.subCategories?.some((s: any) => s.slug === categoryFilter);
+
+                  return (
+                    <div key={cat.id} className="space-y-1">
+                      {/* Parent Category Row */}
+                      <div className="flex items-center justify-between py-1 px-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition group">
+                        <label className="flex items-center gap-2 flex-1 cursor-pointer min-w-0">
+                          <input
+                            type="radio"
+                            name="category"
+                            checked={isParentSelected}
+                            onChange={() => updateFilters({ category: isParentSelected ? '' : cat.slug })}
+                            className="w-4 h-4 accent-purple-600 cursor-pointer flex-shrink-0"
+                          />
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            {cat.iconUrl && (
+                              <img src={cat.iconUrl} alt={cat.name} className="w-4 h-4 rounded object-cover opacity-70 group-hover:opacity-100 flex-shrink-0" />
+                            )}
+                            <span className={`truncate font-semibold ${isParentSelected ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white'}`}>
+                              {cat.name}
+                            </span>
+                          </div>
+                        </label>
+
+                        {/* Expand / Collapse Subcategories Toggle Button */}
+                        {hasSubs && (
+                          <button
+                            onClick={() => toggleCatExpand(cat.id)}
+                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition"
+                            title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
+                          >
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-purple-600' : ''}`} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Subcategories Nested Container */}
+                      {hasSubs && isExpanded && (
+                        <div className="ml-4 pl-2.5 border-l-2 border-slate-200 dark:border-slate-800/80 space-y-1 py-0.5">
+                          {cat.subCategories.map((sub: any) => {
+                            const isSubSelected = categoryFilter === sub.slug;
+                            return (
+                              <label key={sub.id} className="flex items-center justify-between py-1 px-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer group">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <input
+                                    type="radio"
+                                    name="category"
+                                    checked={isSubSelected}
+                                    onChange={() => updateFilters({ category: isSubSelected ? '' : sub.slug })}
+                                    className="w-3.5 h-3.5 accent-purple-600 cursor-pointer flex-shrink-0"
+                                  />
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    {sub.iconUrl && (
+                                      <img src={sub.iconUrl} alt={sub.name} className="w-3.5 h-3.5 rounded object-cover opacity-70 group-hover:opacity-100 flex-shrink-0" />
+                                    )}
+                                    <span className={`truncate text-xs ${isSubSelected ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`}>
+                                      {sub.name}
+                                    </span>
+                                  </div>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
                       )}
-                      <span className="group-hover:text-slate-900 dark:group-hover:text-white transition">{cat.name}</span>
                     </div>
-                  </div>
-                </label>
-              ))}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -310,41 +449,60 @@ function ProductListContent() {
           </div>
           {openAccordions.brand ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
+
         {openAccordions.brand && (
           <div className="mt-3 space-y-2">
+            {/* Search Brand Input with clear button */}
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
-                placeholder="Search brand"
-                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                placeholder="Search brand..."
+                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-purple-500 transition"
               />
-            </div>
-            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-              {filteredBrands.length === 0 && (
-                <p className="text-xs text-slate-400 py-2">No brands found</p>
+              {brandSearch && (
+                <button
+                  onClick={() => setBrandSearch('')}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
-              {filteredBrands.map((br) => (
-                <label key={br.id} className="flex items-center text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer py-0.5 group">
-                  <div className="flex items-center gap-2.5 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={brandFilters.includes(br.slug)}
-                      onChange={() => toggleBrand(br.slug)}
-                      className="w-4 h-4 rounded accent-purple-600 cursor-pointer"
-                    />
-                    <div className="flex items-center gap-1.5">
-                      {br.logoUrl && (
-                        <img src={br.logoUrl} alt={br.name} className="w-4 h-4 rounded object-cover opacity-70 group-hover:opacity-100 transition" />
-                      )}
-                      <span className="group-hover:text-slate-900 dark:group-hover:text-white transition">{br.name}</span>
-                    </div>
-                  </div>
-                </label>
-              ))}
             </div>
+
+            {/* Brands list */}
+            <div className="space-y-1 max-h-60 overflow-y-auto pr-1 text-xs">
+              {filteredBrands.length === 0 ? (
+                <p className="text-xs text-slate-400 py-3 text-center">No brands found matching "{brandSearch}"</p>
+              ) : (
+                filteredBrands.map((br) => {
+                  const isChecked = brandFilters.includes(br.slug);
+                  return (
+                    <label key={br.id} className="flex items-center justify-between text-xs font-semibold py-1 px-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer group">
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleBrand(br.slug)}
+                          className="w-4 h-4 rounded accent-purple-600 cursor-pointer flex-shrink-0"
+                        />
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {br.logoUrl && (
+                            <img src={br.logoUrl} alt={br.name} className="w-4 h-4 rounded object-cover opacity-70 group-hover:opacity-100 flex-shrink-0" />
+                          )}
+                          <span className={`truncate ${isChecked ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white'}`}>
+                            {br.name}
+                          </span>
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+
             {brandFilters.length > 0 && (
               <button
                 onClick={() => {
@@ -353,9 +511,9 @@ function ProductListContent() {
                   p.delete('page');
                   router.push(`/products?${p.toString()}`);
                 }}
-                className="text-[10px] text-rose-500 font-semibold hover:underline mt-1"
+                className="text-[10px] text-rose-500 font-bold hover:underline mt-1 block"
               >
-                Clear brand filter
+                Clear all brand filters ({brandFilters.length})
               </button>
             )}
           </div>
