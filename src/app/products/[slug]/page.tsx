@@ -8,6 +8,7 @@ import {
   ShieldCheck, CheckCircle2, ShoppingBag 
 } from 'lucide-react';
 import Link from 'next/link';
+import { ProductImageMagnifier } from '../../../components/ProductImageMagnifier';
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const { addToCart, toggleWishlist, isInWishlist } = useStore();
@@ -128,8 +129,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
               </button>
             ))}
           </div>
-          <div className="flex-1 aspect-square bg-white dark:bg-white/5 rounded-2xl flex items-center justify-center p-8 border border-black/5 dark:border-white/10">
-            <img src={selectedImage} alt={product.name} className="max-h-[360px] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.05)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)]" />
+          <div className="flex-1">
+            <ProductImageMagnifier src={selectedImage} alt={product.name} />
           </div>
         </div>
 
