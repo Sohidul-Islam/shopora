@@ -13,6 +13,8 @@ import {
   Menu, PanelLeftClose, PanelLeftOpen, ExternalLink
 } from 'lucide-react';
 import { ImageUploader, ProductImageGallery } from '../../components/admin/ImageUploader';
+import CmsSectionBuilder, { CmsBlock } from '../../components/admin/CmsSectionBuilder';
+import CmsCategoryTree from '../../components/admin/CmsCategoryTree';
 import { useStore } from '../../store/useStore';
 
 export default function AdminDashboard() {
@@ -242,6 +244,118 @@ export default function AdminDashboard() {
       if (data.success) setProductImages(data.images);
     } catch {}
   }, []);
+
+  // Blog CMS State & Handlers
+  const [blogArticles, setBlogArticles] = useState<any[]>([]);
+  const [showArticleModal, setShowArticleModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<any>(null);
+  const [articleFormSaving, setArticleFormSaving] = useState(false);
+  const [articleForm, setArticleForm] = useState({
+    title: '',
+    slug: '',
+    authorName: 'Shopora Editorial',
+    readTime: '5 min read',
+    imageUrl: '',
+    publishedAt: new Date().toISOString().split('T')[0],
+  });
+  const [articleBlocks, setArticleBlocks] = useState<CmsBlock[]>([]);
+
+  const fetchBlogArticles = useCallback(async () => {
+    try {
+      const res = await adminFetch('/api/admin/blog');
+      const data = await res.json();
+      if (data.success && data.posts) {
+        setBlogArticles(data.posts);
+      }
+    } catch {}
+  }, [adminFetch]);
+
+  useEffect(() => {
+    fetchBlogArticles();
+  }, [fetchBlogArticles]);
+
+  const openAddArticle = () => {
+    setEditingArticle(null);
+    setArticleForm({
+      title: '',
+      slug: '',
+      authorName: 'Shopora Editorial',
+      readTime: '5 min read',
+      imageUrl: '',
+      publishedAt: new Date().toISOString().split('T')[0],
+    });
+    setArticleBlocks([
+      { id: 'b1', type: 'heading', headingLevel: 'h1', content: 'Introduction to Modern E-Commerce' },
+      { id: 'b2', type: 'text', content: 'Welcome to our blog writeup. Today we explore how high-converting online storefronts leverage headless APIs and instant search experiences.' },
+      { id: 'b3', type: 'callout', calloutType: 'info', content: 'Pro Tip: Customize section components, tables, and banners dynamically.' }
+    ]);
+    setShowArticleModal(true);
+  };
+
+  const openEditArticle = (art: any) => {
+    setEditingArticle(art);
+    setArticleForm({
+      title: art.title || '',
+      slug: art.slug || '',
+      authorName: art.authorName || 'Shopora Editorial',
+      readTime: art.readTime || '5 min read',
+      imageUrl: art.imageUrl || '',
+      publishedAt: art.publishedAt ? new Date(art.publishedAt).toISOString().split('T')[0] : '',
+    });
+
+    let blocks: CmsBlock[] = [];
+    try {
+      if (art.content && art.content.startsWith('[')) {
+        blocks = JSON.parse(art.content);
+      } else {
+        blocks = [{ id: 'b1', type: 'text', content: art.content || '' }];
+      }
+    } catch {
+      blocks = [{ id: 'b1', type: 'text', content: art.content || '' }];
+    }
+    setArticleBlocks(blocks);
+    setShowArticleModal(true);
+  };
+
+  const saveArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setArticleFormSaving(true);
+    try {
+      const payload = {
+        ...articleForm,
+        content: JSON.stringify(articleBlocks),
+      };
+      const url = editingArticle ? `/api/admin/blog/${editingArticle.id}` : '/api/admin/blog';
+      const method = editingArticle ? 'PATCH' : 'POST';
+      const res = await adminFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast(editingArticle ? 'Article updated successfully!' : 'Article published successfully!');
+      setShowArticleModal(false);
+      fetchBlogArticles();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save blog article', 'error');
+    } finally {
+      setArticleFormSaving(false);
+    }
+  };
+
+  const deleteArticle = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this blog article?')) return;
+    try {
+      const res = await adminFetch(`/api/admin/blog/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Article deleted.');
+      fetchBlogArticles();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete article', 'error');
+    }
+  };
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -2140,27 +2254,97 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 18: BLOG ARTICLES */}
+          {/* TAB 18: BLOG ARTICLES & CMS */}
           {activeTab === 'blog' && (
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">Blog CMS Articles</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Publish press releases and product writeups.</p>
+            <div className="space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black font-display text-slate-900 dark:text-white">CMS & Blog Article Management</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Author rich blog posts, construct component sections, and organize category hierarchies.</p>
+                </div>
+                <button
+                  onClick={openAddArticle}
+                  className="py-3 px-5 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-2xl transition inline-flex items-center space-x-2 shadow-lg shadow-purple-650/20"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Article</span>
+                </button>
               </div>
 
-              <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10 max-w-3xl">
-                <div className="space-y-3">
-                  {blogPostsList.map(post => (
-                    <div key={post.id} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs">
-                      <div>
-                        <h4 className="font-bold text-slate-855 dark:text-white">{post.title}</h4>
-                        <span className="text-[10px] text-slate-500">By {post.author} • {post.readTime}</span>
-                      </div>
-                      <Link href="/blog" className="text-xs text-blue-400 font-bold hover:underline">View Blog</Link>
-                    </div>
-                  ))}
+              {/* Articles Table */}
+              <div className="bg-white dark:bg-[#0c0d15] rounded-3xl p-6 border border-black/10 dark:border-slate-800/80 shadow-sm transition-colors duration-300 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">Published & Draft Articles ({blogArticles.length})</h3>
+                  <Link href="/blog" target="_blank" className="text-xs text-purple-600 dark:text-purple-400 font-bold hover:underline inline-flex items-center space-x-1">
+                    <span>Storefront Blog</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-extrabold uppercase tracking-wider">
+                        <th className="py-3">Article</th>
+                        <th className="py-3">Author</th>
+                        <th className="py-3">Read Time</th>
+                        <th className="py-3">Date</th>
+                        <th className="py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold">
+                      {blogArticles.map((art) => (
+                        <tr key={art.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                          <td className="py-3">
+                            <div className="flex items-center space-x-3">
+                              {art.imageUrl ? (
+                                <img src={art.imageUrl} alt={art.title} className="w-12 h-8 rounded-lg object-cover border border-slate-200 dark:border-slate-800" />
+                              ) : (
+                                <div className="w-12 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 font-bold text-[10px]">NO IMG</div>
+                              )}
+                              <div>
+                                <h4 className="font-bold text-slate-900 dark:text-white line-clamp-1">{art.title}</h4>
+                                <span className="font-mono text-[10px] text-purple-600 dark:text-purple-400">/{art.slug}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 font-bold text-slate-700 dark:text-slate-300">{art.authorName}</td>
+                          <td className="py-3 text-slate-500">{art.readTime}</td>
+                          <td className="py-3 text-slate-500">{art.publishedAt ? new Date(art.publishedAt).toLocaleDateString() : 'Draft'}</td>
+                          <td className="py-3 text-right space-x-1.5">
+                            <button
+                              onClick={() => openEditArticle(art)}
+                              className="p-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-white transition inline-flex"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => deleteArticle(art.id)}
+                              className="p-1.5 bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-white transition inline-flex"
+                            >
+                              <Trash className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+              {/* Category Hierarchy Tree Builder */}
+              <CmsCategoryTree
+                categories={categoriesList}
+                onAddCategory={(parentId) => {
+                  setEditingCategory(null);
+                  setCatForm({ name: '', slug: '', parentId: parentId || '', visible: true, featured: false });
+                  setCatBannerUrl('');
+                  setCatIconUrl('');
+                  setShowCategoryModal(true);
+                }}
+                onEditCategory={(c) => openEditCategory(c)}
+                onDeleteCategory={(id) => deleteCategory(id)}
+              />
             </div>
           )}
 
@@ -2998,6 +3182,112 @@ export default function AdminDashboard() {
                 <span>{updatingOrderStatus ? 'Updating Order...' : 'Save Order Process Changes'}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Blog Article Authoring & CMS Section Builder Modal */}
+      {showArticleModal && (
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-4xl w-full relative space-y-6 shadow-2xl my-6 text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowArticleModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400">CMS Article Studio</span>
+              <h3 className="text-2xl font-black font-display text-slate-900 dark:text-white">
+                {editingArticle ? 'Edit Blog Article' : 'Author New Blog Article'}
+              </h3>
+            </div>
+
+            <form onSubmit={saveArticle} className="space-y-6 text-xs font-semibold">
+              {/* Basic Article Metadata */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold">Article Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={articleForm.title}
+                    onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value, slug: editingArticle ? articleForm.slug : toSlug(e.target.value) })}
+                    placeholder="e.g. 10 E-Commerce UI Trends for 2026"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold">URL Slug *</label>
+                  <input
+                    type="text"
+                    required
+                    value={articleForm.slug}
+                    onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })}
+                    placeholder="e.g. e-commerce-ui-trends-2026"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold">Author Name</label>
+                  <input
+                    type="text"
+                    value={articleForm.authorName}
+                    onChange={(e) => setArticleForm({ ...articleForm, authorName: e.target.value })}
+                    placeholder="e.g. Shopora Editorial"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold">Estimated Read Time</label>
+                  <input
+                    type="text"
+                    value={articleForm.readTime}
+                    onChange={(e) => setArticleForm({ ...articleForm, readTime: e.target.value })}
+                    placeholder="e.g. 5 min read"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600"
+                  />
+                </div>
+              </div>
+
+              {/* Featured / Banner Image Section */}
+              <div className="space-y-1 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <label className="block text-slate-700 dark:text-slate-300 font-bold">Featured / Banner Cover Image</label>
+                <ImageUploader
+                  folder="products"
+                  compact
+                  label="Upload Featured Cover Image"
+                  currentUrl={articleForm.imageUrl}
+                  onUploaded={(url) => setArticleForm({ ...articleForm, imageUrl: url })}
+                  onRemove={() => setArticleForm({ ...articleForm, imageUrl: '' })}
+                />
+              </div>
+
+              {/* Section Builder Component */}
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <CmsSectionBuilder blocks={articleBlocks} onChange={setArticleBlocks} />
+              </div>
+
+              {/* Submit Controls */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-3">
+                <button
+                  type="submit"
+                  disabled={articleFormSaving}
+                  className="flex-1 py-3.5 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20"
+                >
+                  {articleFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  <span>{articleFormSaving ? 'Saving Article...' : editingArticle ? 'Save Article Changes' : 'Publish Article'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowArticleModal(false)}
+                  className="py-3.5 px-6 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 font-bold text-slate-600 dark:text-slate-400 rounded-xl transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

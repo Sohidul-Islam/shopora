@@ -5,8 +5,8 @@ import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 interface ImageUploaderProps {
-  /** The upload target folder: 'products' | 'categories' | 'brands' */
-  folder?: 'products' | 'categories' | 'brands';
+  /** The upload target folder: 'products' | 'categories' | 'brands' | 'banners' */
+  folder?: 'products' | 'categories' | 'brands' | 'banners';
   /** Current image URL (for single-image mode) */
   currentUrl?: string;
   /** Callback when upload succeeds — returns the public URL */
