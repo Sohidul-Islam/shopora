@@ -1669,6 +1669,7 @@ export default function AdminDashboard() {
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
                         <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
+                          <th className="py-2.5">Image</th>
                           <th className="py-2.5">SKU</th>
                           <th className="py-2.5">Name</th>
                           <th className="py-2.5">Brand</th>
@@ -1679,9 +1680,24 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
-                        {productsList.map(p => (
-                          <tr key={p.id} className="text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-900/30 transition">
-                            <td className="py-3 font-mono text-blue-400">{p.sku}</td>
+                        {productsList.map(p => {
+                          const imgUrl = p.productImages?.[0]?.url || p.imageUrl || p.images?.[0]?.url;
+                          return (
+                            <tr key={p.id} className="text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-900/30 transition">
+                              <td className="py-3">
+                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-800 flex items-center justify-center flex-shrink-0">
+                                  {imgUrl ? (
+                                    <img
+                                      src={imgUrl}
+                                      alt={p.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <ImageIcon className="w-4 h-4 text-slate-400" />
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 font-mono text-blue-400">{p.sku}</td>
                             <td className="py-3">
                               <div className="font-bold text-slate-855 dark:text-white">{p.name}</div>
                               <div className="text-[10px] text-slate-500">/{p.slug}</div>
@@ -1739,7 +1755,8 @@ export default function AdminDashboard() {
                               </button>
                             </td>
                           </tr>
-                        ))}
+                        );
+                      })}
                       </tbody>
                     </table>
                   </div>
