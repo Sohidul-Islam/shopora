@@ -1,7 +1,7 @@
 import { db } from '../../../db';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Calendar, User, Clock, ArrowLeft, Share2, AlertCircle } from 'lucide-react';
+import { Calendar, User, Clock, ArrowLeft, Share2, AlertCircle, ExternalLink, ShoppingBag } from 'lucide-react';
 import { CmsBlock } from '../../../components/admin/CmsSectionBuilder';
 
 export const revalidate = 60; // ISR validation
@@ -35,76 +35,70 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound();
   }
 
+  // Parse JSON content blocks if applicable
   let blocks: CmsBlock[] = [];
   let isJsonContent = false;
 
   try {
-    if (post.content && post.content.trim().startsWith('[')) {
+    if (post.content && post.content.startsWith('[')) {
       blocks = JSON.parse(post.content);
       isJsonContent = true;
     }
-  } catch {
+  } catch (e) {
     isJsonContent = false;
   }
 
-  // Schema structured data for SEO
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    'headline': post.title,
-    'image': post.imageUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600',
-    'datePublished': post.publishedAt || post.createdAt,
-    'author': {
-      '@type': 'Person',
-      'name': post.authorName,
-    },
-    'publisher': {
-      '@type': 'Organization',
-      'name': 'Shopora',
-      'logo': {
-        '@type': 'ImageObject',
-        'url': 'http://localhost:3001/logo.png',
-      },
-    },
-    'description': post.content.replace(/<[^>]*>/g, '').substring(0, 150),
-  };
+  // Read time & date formatting
+  const formattedDate = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'Recent Post';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fafafa] via-[#fafafa] to-purple-50/20 dark:from-[#05060b] dark:via-[#090b11] dark:to-[#040508] py-16 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <article className="min-h-screen bg-[#fafafa] dark:bg-[#05060b] text-slate-800 dark:text-slate-100 font-sans py-12 px-6 sm:px-12 lg:px-24 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Navigation bar */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/blog"
+            className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-purple-650 dark:hover:text-white transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Articles</span>
+          </Link>
+          <button
+            className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition shadow-sm"
+            title="Share Article"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
 
-      <article className="max-w-4xl mx-auto space-y-10">
-        
-        {/* Back Link */}
-        <Link href="/blog" className="inline-flex items-center space-x-2 text-xs uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400 hover:text-purple-650 dark:hover:text-white transition">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Blog Articles</span>
-        </Link>
+        {/* Article Meta Header */}
+        <div className="space-y-4 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start space-x-4 text-xs text-purple-600 dark:text-purple-400 font-extrabold uppercase tracking-widest">
+            <span className="flex items-center space-x-1">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{formattedDate}</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center space-x-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{post.readTime || '5 min read'}</span>
+            </span>
+          </div>
 
-        {/* Title & Metadata */}
-        <div className="space-y-4">
           <h1 className="text-3xl sm:text-5xl font-black font-display text-slate-900 dark:text-white tracking-tight leading-tight">
             {post.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800/80 pb-6">
-            <span className="flex items-center space-x-1.5">
-              <User className="w-4 h-4 text-purple-500" />
-              <span>By {post.authorName}</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <Clock className="w-4 h-4 text-blue-500" />
-              <span>{post.readTime}</span>
-            </span>
-            {post.publishedAt && (
-              <span className="flex items-center space-x-1.5">
-                <Calendar className="w-4 h-4 text-emerald-500" />
-                <span>{new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-              </span>
-            )}
+          <div className="flex items-center justify-center sm:justify-start space-x-3 pt-2">
+            <div className="w-10 h-10 rounded-full bg-purple-650 text-white flex items-center justify-center font-bold text-sm shadow-md">
+              {(post.authorName || 'Shopora Editorial').charAt(0)}
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-900 dark:text-white block">{post.authorName || 'Shopora Editorial'}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 block">Senior Product Strategist</span>
+            </div>
           </div>
         </div>
 
@@ -120,6 +114,49 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           {isJsonContent ? (
             blocks.map((block) => (
               <div key={block.id} className="space-y-4">
+                {block.type === 'product_card' && (
+                  <div className="my-6 bg-slate-50 dark:bg-[#0a0b12] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+                    <div className="flex items-center space-x-5">
+                      <div className="w-24 h-24 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center p-3 shrink-0 shadow-md">
+                        <img src={block.imageUrl || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'} alt={block.productName || 'Product'} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 tracking-wider">Featured Store Product</span>
+                        <h4 className="text-lg font-black text-slate-900 dark:text-white line-clamp-1">{block.productName || 'Sample Product'}</h4>
+                        <p className="text-base font-black text-slate-900 dark:text-white">${block.productPrice || '29.99'}</p>
+                      </div>
+                    </div>
+                    <Link
+                      href={block.buttonUrl || `/products/${block.productSlug || ''}`}
+                      target={block.openInNewTab ? '_blank' : '_self'}
+                      className="w-full sm:w-auto px-7 py-4 bg-purple-650 dark:bg-purple-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-purple-650/25 hover:bg-purple-700 transition flex items-center justify-center space-x-2 shrink-0"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>{block.buttonText || 'View Product Details'}</span>
+                    </Link>
+                  </div>
+                )}
+
+                {block.type === 'button_cta' && (
+                  <div
+                    className="py-3"
+                    style={{
+                      display: 'flex',
+                      justifyContent: block.align === 'center' ? 'center' : block.align === 'right' ? 'flex-end' : 'flex-start'
+                    }}
+                  >
+                    <a
+                      href={block.buttonUrl || '#'}
+                      target={block.openInNewTab ? '_blank' : '_self'}
+                      rel={block.openInNewTab ? 'noopener noreferrer' : undefined}
+                      className="inline-flex items-center space-x-2 py-4 px-8 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 text-white font-black text-sm rounded-2xl transition shadow-xl shadow-purple-650/25 group"
+                    >
+                      <span>{block.buttonText || 'Click Here'}</span>
+                      <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition" />
+                    </a>
+                  </div>
+                )}
+
                 {block.type === 'heading' && (
                   <div className="pt-3">
                     {block.headingLevel === 'h1' && <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{block.content}</h1>}
@@ -162,13 +199,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 )}
 
                 {block.type === 'banner' && (
-                  <div className="relative rounded-3xl overflow-hidden aspect-[21/9] bg-slate-900 flex items-center justify-center p-8 text-center text-white my-4 shadow-xl">
-                    {block.imageUrl && <img src={block.imageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
+                  <Link
+                    href={block.bannerUrl || '#'}
+                    target={block.openInNewTab ? '_blank' : '_self'}
+                    className="block relative rounded-3xl overflow-hidden aspect-[21/9] bg-slate-900 flex items-center justify-center p-8 text-center text-white my-4 shadow-xl group hover:shadow-2xl transition duration-300"
+                  >
+                    {block.imageUrl && <img src={block.imageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition duration-500" />}
                     <div className="relative z-10 space-y-3">
                       <h2 className="text-2xl sm:text-4xl font-black">{block.bannerTitle || 'Featured Section Banner'}</h2>
-                      <p className="text-sm opacity-90 max-w-xl mx-auto">{block.bannerSubtitle}</p>
+                      {block.bannerSubtitle && <p className="text-sm opacity-90 max-w-xl mx-auto">{block.bannerSubtitle}</p>}
                     </div>
-                  </div>
+                  </Link>
                 )}
 
                 {block.type === 'quote' && (
@@ -202,9 +243,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
                         {(block.tableRows || []).map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-slate-50 dark:hover:bg-slate-900/30">
+                          <tr key={rIdx}>
                             {row.map((cell, cIdx) => (
-                              <td key={cIdx} className="p-3.5 text-slate-700 dark:text-slate-300">{cell}</td>
+                              <td key={cIdx} className="p-3 text-slate-700 dark:text-slate-300">{cell}</td>
                             ))}
                           </tr>
                         ))}
@@ -220,22 +261,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             ))
           ) : (
             <div
-              className="text-slate-700 dark:text-slate-300 leading-relaxed space-y-6 text-base sm:text-lg border-t border-slate-100 dark:border-slate-900/60 pt-4"
+              className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-relaxed space-y-4"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           )}
         </div>
-
-        {/* Share Section */}
-        <div className="border-t border-slate-200 dark:border-slate-800 pt-8 flex items-center justify-between">
-          <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wider">Share this article</span>
-          <button className="flex items-center space-x-2 py-2 px-4 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-white transition">
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Copy Link</span>
-          </button>
-        </div>
-
-      </article>
-    </div>
+      </div>
+    </article>
   );
 }

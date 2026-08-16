@@ -3206,20 +3206,20 @@ export default function AdminDashboard() {
 
       {/* 6. Blog Article Authoring & CMS Section Builder Modal */}
       {showArticleModal && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-4xl w-full relative space-y-6 shadow-2xl my-6 text-slate-900 dark:text-white transition-colors duration-300">
-            <button onClick={() => setShowArticleModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-6 sm:p-7 max-w-4xl w-full max-h-[90vh] flex flex-col relative shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setShowArticleModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition p-1">
               <X className="w-5 h-5" />
             </button>
 
-            <div className="space-y-1 border-b border-slate-200 dark:border-slate-800 pb-4">
+            <div className="space-y-1 border-b border-slate-200 dark:border-slate-800 pb-4 shrink-0 pr-8">
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-purple-600 dark:text-purple-400">CMS Article Studio</span>
               <h3 className="text-2xl font-black font-display text-slate-900 dark:text-white">
                 {editingArticle ? 'Edit Blog Article' : 'Author New Blog Article'}
               </h3>
             </div>
 
-            <form onSubmit={saveArticle} className="space-y-6 text-xs font-semibold">
+            <form onSubmit={saveArticle} className="flex-1 overflow-y-auto pr-2 space-y-6 text-xs font-semibold pt-4">
               {/* Basic Article Metadata */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -3284,11 +3284,11 @@ export default function AdminDashboard() {
 
               {/* Section Builder Component */}
               <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                <CmsSectionBuilder blocks={articleBlocks} onChange={setArticleBlocks} />
+                <CmsSectionBuilder blocks={articleBlocks} onChange={setArticleBlocks} productsList={productsList} />
               </div>
 
               {/* Submit Controls */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-3">
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-3 sticky bottom-0 bg-white dark:bg-[#0c0d15] z-10 pb-1">
                 <button
                   type="submit"
                   disabled={articleFormSaving}

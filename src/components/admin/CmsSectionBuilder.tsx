@@ -5,13 +5,13 @@ import {
   Bold, Italic, Heading1, Heading2, Heading3, Quote, List, ListOrdered,
   AlignLeft, AlignCenter, AlignRight, Link as LinkIcon, Image as ImageIcon,
   Plus, Trash2, ArrowUp, ArrowDown, Layout, Table as TableIcon, Code,
-  Eye, Edit3, Layers, Sparkles, Check, ChevronRight, AlertCircle, FileText
+  Eye, Edit3, Layers, Sparkles, Check, ChevronRight, AlertCircle, FileText, ExternalLink, ShoppingBag
 } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 
 export interface CmsBlock {
   id: string;
-  type: 'heading' | 'text' | 'image' | 'split_image_text' | 'banner' | 'quote' | 'callout' | 'table' | 'custom_html';
+  type: 'heading' | 'text' | 'image' | 'split_image_text' | 'banner' | 'quote' | 'callout' | 'table' | 'custom_html' | 'button_cta' | 'product_card';
   headingLevel?: 'h1' | 'h2' | 'h3';
   content?: string;
   align?: 'left' | 'center' | 'right';
@@ -20,32 +20,54 @@ export interface CmsBlock {
   imagePosition?: 'left' | 'right';
   bannerTitle?: string;
   bannerSubtitle?: string;
+  bannerUrl?: string;
   quoteAuthor?: string;
   calloutType?: 'info' | 'tip' | 'warning';
   tableHeaders?: string[];
   tableRows?: string[][];
+  buttonText?: string;
+  buttonUrl?: string;
+  openInNewTab?: boolean;
+  productId?: string;
+  productSlug?: string;
+  productName?: string;
+  productPrice?: string;
+  productSalePrice?: string;
 }
 
 interface CmsSectionBuilderProps {
   blocks: CmsBlock[];
   onChange: (blocks: CmsBlock[]) => void;
+  productsList?: Array<any>;
 }
 
-export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilderProps) {
+export default function CmsSectionBuilder({ blocks, onChange, productsList = [] }: CmsSectionBuilderProps) {
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
   const addBlock = (type: CmsBlock['type']) => {
+    const defaultProd = productsList[0];
     const newBlock: CmsBlock = {
       id: crypto.randomUUID(),
       type,
       headingLevel: 'h2',
       content: '',
-      align: 'left',
-      imageUrl: '',
+      align: 'center',
+      imageUrl: defaultProd?.productImages?.[0]?.url || defaultProd?.image || '',
       caption: '',
       imagePosition: 'right',
       calloutType: 'info',
+      buttonText: 'Buy / Explore Product',
+      buttonUrl: defaultProd ? `/products/${defaultProd.slug}` : '/products',
+      bannerTitle: 'Featured Store Product',
+      bannerSubtitle: 'Exclusive online deal available now',
+      bannerUrl: defaultProd ? `/products/${defaultProd.slug}` : '/products',
+      openInNewTab: false,
+      productId: defaultProd?.id || '',
+      productSlug: defaultProd?.slug || '',
+      productName: defaultProd?.name || 'Sample Product',
+      productPrice: String(defaultProd?.price || '29.99'),
+      productSalePrice: defaultProd?.salePrice ? String(defaultProd.salePrice) : undefined,
       tableHeaders: ['Feature', 'Specification', 'Details'],
       tableRows: [
         ['Display', '6.7" Super Retina XDR', 'OLED display with ProMotion'],
@@ -59,6 +81,44 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
 
   const updateBlock = (id: string, updates: Partial<CmsBlock>) => {
     onChange(blocks.map(b => (b.id === id ? { ...b, ...updates } : b)));
+  };
+
+  const handleProductSelectForBlock = (blockId: string, prodId: string, targetField: 'buttonUrl' | 'bannerUrl' | 'product_card') => {
+    const prod = productsList.find(p => p.id === prodId);
+    if (!prod) return;
+
+    const prodUrl = `/products/${prod.slug}`;
+    const prodImg = prod.productImages?.[0]?.url || prod.image || '';
+
+    if (targetField === 'buttonUrl') {
+      updateBlock(blockId, {
+        productId: prod.id,
+        productSlug: prod.slug,
+        productName: prod.name,
+        buttonUrl: prodUrl,
+        buttonText: `Buy ${prod.name}`,
+      });
+    } else if (targetField === 'bannerUrl') {
+      updateBlock(blockId, {
+        productId: prod.id,
+        productSlug: prod.slug,
+        productName: prod.name,
+        bannerUrl: prodUrl,
+        imageUrl: prodImg || undefined,
+        bannerTitle: prod.name,
+      });
+    } else if (targetField === 'product_card') {
+      updateBlock(blockId, {
+        productId: prod.id,
+        productSlug: prod.slug,
+        productName: prod.name,
+        productPrice: String(prod.price),
+        productSalePrice: prod.salePrice ? String(prod.salePrice) : undefined,
+        imageUrl: prodImg,
+        buttonUrl: prodUrl,
+        buttonText: 'Buy Now',
+      });
+    }
   };
 
   const removeBlock = (id: string) => {
@@ -76,7 +136,6 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
     onChange(newBlocks);
   };
 
-  // Helper for applying formatting tags into textareas
   const applyTextFormat = (blockId: string, tagStart: string, tagEnd: string = tagStart) => {
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
@@ -85,7 +144,6 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
     updateBlock(blockId, { content: formatted });
   };
 
-  // Table manipulation helpers
   const addTableRow = (blockId: string) => {
     const block = blocks.find(b => b.id === blockId);
     if (!block || !block.tableRows) return;
@@ -126,7 +184,7 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
           </span>
           <div>
             <h4 className="text-xs font-bold text-slate-900 dark:text-white">CMS Block Section Builder</h4>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">Design articles using flexible content sections & tables.</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">Link store products to banners, CTA buttons, and buy cards.</p>
           </div>
         </div>
 
@@ -163,7 +221,31 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
           {/* Add Component Palette */}
           <div className="space-y-2">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Add Content Component Section</span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <button
+                type="button"
+                onClick={() => addBlock('product_card')}
+                className="p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-left transition flex items-center space-x-2 text-xs font-black text-emerald-700 dark:text-emerald-300"
+              >
+                <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                <span>Product Buy Card</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock('button_cta')}
+                className="p-2.5 bg-slate-50 hover:bg-purple-50 dark:bg-slate-900 dark:hover:bg-purple-900/20 border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 rounded-xl text-left transition flex items-center space-x-2 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <ExternalLink className="w-4 h-4 text-purple-600" />
+                <span>CTA Button</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => addBlock('banner')}
+                className="p-2.5 bg-slate-50 hover:bg-purple-50 dark:bg-slate-900 dark:hover:bg-purple-900/20 border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 rounded-xl text-left transition flex items-center space-x-2 text-xs font-bold text-slate-700 dark:text-slate-300"
+              >
+                <Sparkles className="w-4 h-4 text-rose-500" />
+                <span>Hero Banner</span>
+              </button>
               <button
                 type="button"
                 onClick={() => addBlock('text')}
@@ -195,14 +277,6 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
               >
                 <Layout className="w-4 h-4 text-amber-500" />
                 <span>Image + Text</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => addBlock('banner')}
-                className="p-2.5 bg-slate-50 hover:bg-purple-50 dark:bg-slate-900 dark:hover:bg-purple-900/20 border border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 rounded-xl text-left transition flex items-center space-x-2 text-xs font-bold text-slate-700 dark:text-slate-300"
-              >
-                <Sparkles className="w-4 h-4 text-rose-500" />
-                <span>Hero Banner</span>
               </button>
               <button
                 type="button"
@@ -293,6 +367,182 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
                   </div>
 
                   {/* Block Type Editor Forms */}
+                  {block.type === 'product_card' && (
+                    <div className="space-y-4">
+                      <div className="p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-2xl space-y-2">
+                        <label className="block text-xs font-bold text-purple-900 dark:text-purple-300 flex items-center space-x-1.5">
+                          <ShoppingBag className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <span>Link Catalog Product for Direct Purchase *</span>
+                        </label>
+                        <select
+                          value={block.productId || ''}
+                          onChange={(e) => handleProductSelectForBlock(block.id, e.target.value, 'product_card')}
+                          className="w-full bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-bold"
+                        >
+                          <option value="">— Select Store Product —</option>
+                          {productsList.map(p => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} (${p.price})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Product Card Title</label>
+                          <input
+                            type="text"
+                            value={block.productName || ''}
+                            onChange={(e) => updateBlock(block.id, { productName: e.target.value })}
+                            placeholder="Product Title..."
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-bold"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Purchase Page URL</label>
+                          <input
+                            type="text"
+                            value={block.buttonUrl || ''}
+                            onChange={(e) => updateBlock(block.id, { buttonUrl: e.target.value })}
+                            placeholder="/products/sample-slug"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs font-mono text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {block.type === 'button_cta' && (
+                    <div className="space-y-4">
+                      {productsList.length > 0 && (
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                          <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Quick Link to Catalog Product Details Page:</label>
+                          <select
+                            value={block.productId || ''}
+                            onChange={(e) => handleProductSelectForBlock(block.id, e.target.value, 'buttonUrl')}
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-xs text-slate-900 dark:text-white font-semibold"
+                          >
+                            <option value="">— Select Catalog Product (Auto-fills URL & Button Text) —</option>
+                            {productsList.map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} (/products/{p.slug})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Button Label *</label>
+                          <input
+                            type="text"
+                            value={block.buttonText || ''}
+                            onChange={(e) => updateBlock(block.id, { buttonText: e.target.value })}
+                            placeholder="e.g. Shop Now / Buy Product"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-900 dark:text-white font-bold"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Destination Link URL *</label>
+                          <input
+                            type="text"
+                            value={block.buttonUrl || ''}
+                            onChange={(e) => updateBlock(block.id, { buttonUrl: e.target.value })}
+                            placeholder="e.g. /products/aluminum-foil-75-sq-ft-201"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center space-x-2">
+                          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Alignment:</label>
+                          {(['left', 'center', 'right'] as const).map(pos => (
+                            <button
+                              key={pos}
+                              type="button"
+                              onClick={() => updateBlock(block.id, { align: pos })}
+                              className={`px-3 py-1 text-xs font-bold capitalize rounded-lg border transition ${
+                                block.align === pos ? 'bg-purple-650 text-white border-purple-650' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                              }`}
+                            >
+                              {pos}
+                            </button>
+                          ))}
+                        </div>
+
+                        <label className="flex items-center space-x-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={block.openInNewTab ?? false}
+                            onChange={(e) => updateBlock(block.id, { openInNewTab: e.target.checked })}
+                            className="accent-purple-650 rounded"
+                          />
+                          <span>Open Link in New Window (`target="_blank"`)</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {block.type === 'banner' && (
+                    <div className="space-y-3">
+                      {productsList.length > 0 && (
+                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                          <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Link Hero Banner to Product Purchase Page:</label>
+                          <select
+                            value={block.productId || ''}
+                            onChange={(e) => handleProductSelectForBlock(block.id, e.target.value, 'bannerUrl')}
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-xs text-slate-900 dark:text-white font-semibold"
+                          >
+                            <option value="">— Select Catalog Product to Link Banner —</option>
+                            {productsList.map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} (/products/{p.slug})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <ImageUploader
+                        folder="banners"
+                        compact
+                        label="Hero Banner Cover Image"
+                        currentUrl={block.imageUrl}
+                        onUploaded={(url: string) => updateBlock(block.id, { imageUrl: url })}
+                        onRemove={() => updateBlock(block.id, { imageUrl: '' })}
+                      />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          type="text"
+                          value={block.bannerTitle || ''}
+                          onChange={(e) => updateBlock(block.id, { bannerTitle: e.target.value })}
+                          placeholder="Banner Headline Title..."
+                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-bold"
+                        />
+                        <input
+                          type="text"
+                          value={block.bannerUrl || ''}
+                          onChange={(e) => updateBlock(block.id, { bannerUrl: e.target.value })}
+                          placeholder="Banner On-Click URL Link (e.g. /products/slug)..."
+                          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs font-mono text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={block.bannerSubtitle || ''}
+                        onChange={(e) => updateBlock(block.id, { bannerSubtitle: e.target.value })}
+                        placeholder="Banner Subtitle..."
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  )}
+
                   {block.type === 'heading' && (
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
@@ -324,7 +574,6 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
 
                   {block.type === 'text' && (
                     <div className="space-y-2">
-                      {/* Formatting Toolbar */}
                       <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                         <button type="button" onClick={() => applyTextFormat(block.id, '<b>', '</b>')} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400"><Bold className="w-3.5 h-3.5" /></button>
                         <button type="button" onClick={() => applyTextFormat(block.id, '<i>', '</i>')} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400"><Italic className="w-3.5 h-3.5" /></button>
@@ -408,33 +657,6 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
                           className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-900 dark:text-white"
                         />
                       </div>
-                    </div>
-                  )}
-
-                  {block.type === 'banner' && (
-                    <div className="space-y-3">
-                      <ImageUploader
-                        folder="banners"
-                        compact
-                        label="Hero Banner Image"
-                        currentUrl={block.imageUrl}
-                        onUploaded={(url: string) => updateBlock(block.id, { imageUrl: url })}
-                        onRemove={() => updateBlock(block.id, { imageUrl: '' })}
-                      />
-                      <input
-                        type="text"
-                        value={block.bannerTitle || ''}
-                        onChange={(e) => updateBlock(block.id, { bannerTitle: e.target.value })}
-                        placeholder="Banner Headline Title..."
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white font-bold"
-                      />
-                      <input
-                        type="text"
-                        value={block.bannerSubtitle || ''}
-                        onChange={(e) => updateBlock(block.id, { bannerSubtitle: e.target.value })}
-                        placeholder="Banner Subtitle..."
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-xs text-slate-900 dark:text-white"
-                      />
                     </div>
                   )}
 
@@ -596,6 +818,49 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
 
           {blocks.map((block) => (
             <div key={block.id}>
+              {block.type === 'product_card' && (
+                <div className="my-4 bg-slate-50 dark:bg-[#0a0b12] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center p-2 shrink-0">
+                      <img src={block.imageUrl || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200'} alt={block.productName || 'Product'} className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase text-purple-600 dark:text-purple-400 tracking-wider">Featured Store Product</span>
+                      <h4 className="text-base font-extrabold text-slate-900 dark:text-white line-clamp-1">{block.productName || 'Sample Product'}</h4>
+                      <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5">${block.productPrice || '29.99'}</p>
+                    </div>
+                  </div>
+                  <a
+                    href={block.buttonUrl || `/products/${block.productSlug || ''}`}
+                    target={block.openInNewTab ? '_blank' : '_self'}
+                    className="w-full sm:w-auto px-6 py-3.5 bg-purple-650 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-purple-650/20 hover:bg-purple-700 transition flex items-center justify-center space-x-2"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>View Product Details</span>
+                  </a>
+                </div>
+              )}
+
+              {block.type === 'button_cta' && (
+                <div
+                  className="py-2"
+                  style={{
+                    display: 'flex',
+                    justifyContent: block.align === 'center' ? 'center' : block.align === 'right' ? 'flex-end' : 'flex-start'
+                  }}
+                >
+                  <a
+                    href={block.buttonUrl || '#'}
+                    target={block.openInNewTab ? '_blank' : '_self'}
+                    rel={block.openInNewTab ? 'noopener noreferrer' : undefined}
+                    className="inline-flex items-center space-x-2 py-3.5 px-7 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 text-white font-black text-sm rounded-2xl transition shadow-lg shadow-purple-650/25 group"
+                  >
+                    <span>{block.buttonText || 'Click Here'}</span>
+                    <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition" />
+                  </a>
+                </div>
+              )}
+
               {block.type === 'heading' && (
                 <div className="pt-2">
                   {block.headingLevel === 'h1' && <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">{block.content || 'Heading Title'}</h1>}
@@ -638,13 +903,17 @@ export default function CmsSectionBuilder({ blocks, onChange }: CmsSectionBuilde
               )}
 
               {block.type === 'banner' && (
-                <div className="relative rounded-3xl overflow-hidden aspect-[21/9] bg-slate-900 flex items-center justify-center p-6 text-center text-white">
-                  {block.imageUrl && <img src={block.imageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
+                <a
+                  href={block.bannerUrl || '#'}
+                  target={block.openInNewTab ? '_blank' : '_self'}
+                  className="block relative rounded-3xl overflow-hidden aspect-[21/9] bg-slate-900 flex items-center justify-center p-6 text-center text-white group hover:shadow-2xl transition"
+                >
+                  {block.imageUrl && <img src={block.imageUrl} alt="Banner" className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition duration-500" />}
                   <div className="relative z-10 space-y-2">
                     <h2 className="text-2xl sm:text-4xl font-black">{block.bannerTitle || 'Hero Banner Headline'}</h2>
                     <p className="text-sm opacity-90">{block.bannerSubtitle || 'Banner Subtitle text...'}</p>
                   </div>
-                </div>
+                </a>
               )}
 
               {block.type === 'quote' && (
