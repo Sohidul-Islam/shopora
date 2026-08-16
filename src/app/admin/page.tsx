@@ -104,10 +104,10 @@ export default function AdminDashboard() {
   useEffect(() => { fetchBrands(); }, []);
   useEffect(() => { fetchBanners(); }, []);
 
-  const [ordersList] = useState([
-    { id: 'ORD-1049', customer: 'Sarah Jenkins', total: 1099.00, status: 'CONFIRMED', gateway: 'STRIPE', date: '5 mins ago' },
-    { id: 'ORD-1048', customer: 'David Chen', total: 149.99, status: 'PENDING', gateway: 'COD', date: '25 mins ago' },
-    { id: 'ORD-1047', customer: 'Elena Rostova', total: 348.00, status: 'DELIVERED', gateway: 'PAYPAL', date: '2 hours ago' }
+  const [ordersList, setOrdersList] = useState<any[]>([
+    { id: 'ORD-1049', customer: 'Sarah Jenkins', total: 1099.00, status: 'CONFIRMED', gateway: 'STRIPE', paymentStatus: 'COMPLETED', date: '5 mins ago' },
+    { id: 'ORD-1048', customer: 'David Chen', total: 149.99, status: 'PENDING', gateway: 'COD', paymentStatus: 'PENDING', date: '25 mins ago' },
+    { id: 'ORD-1047', customer: 'Elena Rostova', total: 348.00, status: 'DELIVERED', gateway: 'PAYPAL', paymentStatus: 'COMPLETED', date: '2 hours ago' }
   ]);
 
   const [returnsList] = useState([
@@ -347,16 +347,101 @@ export default function AdminDashboard() {
     }
   };
 
-  const deleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to remove this product? This is a soft delete.')) return;
+  // Orders Management State
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [updatingOrderStatus, setUpdatingOrderStatus] = useState(false);
+  const [orderStatusNotes, setOrderStatusNotes] = useState('');
+  const [newOrderStatus, setNewOrderStatus] = useState('');
+  const [newPaymentStatus, setNewPaymentStatus] = useState('');
+
+  const fetchOrders = useCallback(async () => {
     try {
-      const res = await adminFetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      const res = await adminFetch('/api/admin/orders');
+      const data = await res.json();
+      if (data.success && data.orders) {
+        setOrdersList(data.orders.map((o: any) => ({
+          id: o.id,
+          date: new Date(o.createdAt).toLocaleDateString(),
+          customer: o.user ? (o.user.name || o.user.email) : 'Guest User',
+          gateway: o.payments && o.payments[0] ? o.payments[0].gateway : 'COD',
+          paymentStatus: o.payments && o.payments[0] ? o.payments[0].status : 'PENDING',
+          total: Number(o.totalAmount),
+          status: o.status,
+          rawOrder: o
+        })));
+      }
+    } catch {}
+  }, [adminFetch]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleOpenOrder = async (orderId: string) => {
+    try {
+      const res = await adminFetch(`/api/admin/orders/${orderId}`);
+      const data = await res.json();
+      if (data.success && data.order) {
+        setSelectedOrder(data.order);
+        setNewOrderStatus(data.order.status);
+        setNewPaymentStatus(data.order.payments && data.order.payments[0] ? data.order.payments[0].status : 'PENDING');
+        setOrderStatusNotes('');
+        setOrderModalOpen(true);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to load order details', 'error');
+    }
+  };
+
+  const handleSaveOrderUpdate = async () => {
+    if (!selectedOrder) return;
+    setUpdatingOrderStatus(true);
+    try {
+      const res = await adminFetch(`/api/admin/orders/${selectedOrder.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newOrderStatus,
+          paymentStatus: newPaymentStatus,
+          notes: orderStatusNotes || `Status updated to ${newOrderStatus}`
+        })
+      });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      showToast('Product deleted successfully.');
+      showToast('Order status updated successfully!');
+      setSelectedOrder(data.order);
+      fetchOrders();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update order status', 'error');
+    } finally {
+      setUpdatingOrderStatus(false);
+    }
+  };
+
+  const softDeleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to soft delete (archive) this product?')) return;
+    try {
+      const res = await adminFetch(`/api/admin/products/${id}?mode=soft`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Product soft-deleted (archived).');
       fetchProducts();
     } catch (err: any) {
       showToast(err.message || 'Failed to delete product', 'error');
+    }
+  };
+
+  const hardDeleteProduct = async (id: string) => {
+    if (!confirm('CAUTION: Are you sure you want to PERMANENTLY hard delete this product and all its variants/images? This action CANNOT be undone!')) return;
+    try {
+      const res = await adminFetch(`/api/admin/products/${id}?mode=hard`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      showToast('Product permanently hard-deleted.');
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to hard delete product', 'error');
     }
   };
 
@@ -1237,31 +1322,52 @@ export default function AdminDashboard() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">Manage orders lifecycle, shipment statuses, and payment states.</p>
               </div>
 
-              <div className="glass rounded-3xl p-6 border border-slate-850 shadow-lg shadow-black/10">
+              <div className="bg-white dark:bg-[#0c0d15] rounded-3xl p-6 border border-black/10 dark:border-slate-800/80 shadow-sm transition-colors duration-300">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-900 font-extrabold uppercase tracking-wider">
+                      <tr className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-extrabold uppercase tracking-wider">
                         <th className="py-3">Order ID</th>
-                        <th className="py-3">Fulfillment Date</th>
+                        <th className="py-3">Date</th>
                         <th className="py-3">Customer</th>
-                        <th className="py-3">Payment Adapter</th>
-                        <th className="py-3">Total Amount</th>
-                        <th className="py-3">Status</th>
+                        <th className="py-3">Payment</th>
+                        <th className="py-3">Total</th>
+                        <th className="py-3">Fulfillment Status</th>
+                        <th className="py-3 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-900/60">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                       {ordersList.map(o => (
-                        <tr key={o.id} className="text-slate-700 dark:text-slate-300 font-semibold">
-                          <td className="py-4 font-mono text-blue-400">{o.id}</td>
+                        <tr key={o.id} className="text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+                          <td className="py-4 font-mono text-purple-600 dark:text-purple-400">{o.id}</td>
                           <td className="py-4">{o.date}</td>
-                          <td className="py-4">{o.customer}</td>
-                          <td className="py-4">{o.gateway}</td>
-                          <td className="py-4">{formatPrice(o.total)}</td>
+                          <td className="py-4 font-bold text-slate-900 dark:text-white">{o.customer}</td>
                           <td className="py-4">
-                            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold ${
-                              o.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                            <div className="space-y-0.5">
+                              <span className="font-mono text-[11px] block">{o.gateway}</span>
+                              <span className={`inline-block px-1.5 py-0.2 text-[9px] font-extrabold rounded ${
+                                o.paymentStatus === 'COMPLETED' || o.paymentStatus === 'PAID' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                              }`}>{o.paymentStatus || 'PENDING'}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 font-bold text-slate-900 dark:text-white">{formatPrice(o.total)}</td>
+                          <td className="py-4">
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold border ${
+                              o.status === 'DELIVERED' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                              o.status === 'SHIPPED' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
+                              o.status === 'CONFIRMED' || o.status === 'PROCESSING' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' :
+                              o.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
+                              'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                             }`}>{o.status}</span>
+                          </td>
+                          <td className="py-4 text-right">
+                            <button
+                              onClick={() => handleOpenOrder(o.id)}
+                              className="py-1.5 px-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 text-white font-bold rounded-lg transition text-[11px] inline-flex items-center space-x-1"
+                            >
+                              <span>Manage</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1477,18 +1583,27 @@ export default function AdminDashboard() {
                                 {p.status}
                               </button>
                             </td>
-                            <td className="py-3 text-right space-x-2">
+                            <td className="py-3 text-right space-x-1.5">
                               <button
                                 onClick={() => openEditProduct(p)}
-                                className="p-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-205 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition inline-flex"
+                                title="Edit Product"
+                                className="p-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-white transition inline-flex"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={() => deleteProduct(p.id)}
-                                className="p-1.5 bg-rose-500/5 hover:bg-rose-500 border border-rose-500/20 rounded-lg text-rose-400 hover:text-white transition inline-flex"
+                                onClick={() => softDeleteProduct(p.id)}
+                                title="Soft Delete (Archive)"
+                                className="p-1.5 bg-amber-500/10 hover:bg-amber-500 border border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400 hover:text-white transition inline-flex"
                               >
                                 <Trash className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => hardDeleteProduct(p.id)}
+                                title="Hard Delete (Permanent Removal)"
+                                className="p-1.5 bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-white transition inline-flex"
+                              >
+                                <X className="w-3.5 h-3.5" />
                               </button>
                             </td>
                           </tr>
@@ -2548,8 +2663,8 @@ export default function AdminDashboard() {
 
       {/* Category Add/Edit Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-lg w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-lg w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300 my-4">
             <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
               <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingCategory ? 'Edit Category' : 'Add Category / Sub-category'}</h3>
@@ -2584,6 +2699,32 @@ export default function AdminDashboard() {
                     <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.name}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Category Icon & Banner Upload */}
+              <div className="grid grid-cols-2 gap-3 pt-1 border-t border-slate-200 dark:border-slate-800">
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Category Icon</label>
+                  <ImageUploader
+                    folder="categories"
+                    compact
+                    label="Upload Icon"
+                    currentUrl={catIconUrl}
+                    onUploaded={(url) => setCatIconUrl(url)}
+                    onRemove={() => setCatIconUrl('')}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Category Banner</label>
+                  <ImageUploader
+                    folder="categories"
+                    compact
+                    label="Upload Banner"
+                    currentUrl={catBannerUrl}
+                    onUploaded={(url) => setCatBannerUrl(url)}
+                    onRemove={() => setCatBannerUrl('')}
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -2632,6 +2773,20 @@ export default function AdminDashboard() {
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. sony" />
               </div>
+
+              {/* Brand Logo Upload */}
+              <div className="space-y-1 pt-1 border-t border-slate-200 dark:border-slate-800">
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Brand Logo</label>
+                <ImageUploader
+                  folder="brands"
+                  compact
+                  label="Upload Logo"
+                  currentUrl={brandForm.logoUrl}
+                  onUploaded={(url) => setBrandForm({ ...brandForm, logoUrl: url })}
+                  onRemove={() => setBrandForm({ ...brandForm, logoUrl: '' })}
+                />
+              </div>
+
               <div className="space-y-1">
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold">Status</label>
                 <select value={brandForm.status} onChange={(e) => setBrandForm({ ...brandForm, status: e.target.value })}
@@ -2649,10 +2804,11 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
       {/* Banner Add/Edit Modal */}
       {showBannerModal && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-md w-full relative space-y-5 shadow-2xl text-slate-900 dark:text-white transition-colors duration-300 my-4">
             <button onClick={() => setShowBannerModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
             <div>
               <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingBanner ? 'Edit Banner Slide' : 'Create Banner Slide'}</h3>
@@ -2674,13 +2830,20 @@ export default function AdminDashboard() {
                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
                   placeholder="e.g. Titanium design, ultimate A17 Pro chip." />
               </div>
+
+              {/* Banner Image Upload */}
               <div className="space-y-1">
-                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Banner Image URL *</label>
-                <input type="text" required value={bannerForm.imageUrl}
-                  onChange={(e) => setBannerForm({ ...bannerForm, imageUrl: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors"
-                  placeholder="e.g. https://images.unsplash.com/..." />
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Banner Image *</label>
+                <ImageUploader
+                  folder="products"
+                  compact
+                  label="Upload Banner Image"
+                  currentUrl={bannerForm.imageUrl}
+                  onUploaded={(url) => setBannerForm({ ...bannerForm, imageUrl: url })}
+                  onRemove={() => setBannerForm({ ...bannerForm, imageUrl: '' })}
+                />
               </div>
+
               <div className="space-y-1">
                 <label className="block text-slate-700 dark:text-slate-300 font-semibold">Link Destination URL</label>
                 <input type="text" value={bannerForm.linkUrl}
@@ -2702,6 +2865,139 @@ export default function AdminDashboard() {
                 <span>{bannerFormSaving ? 'Saving...' : editingBanner ? 'Save Changes' : 'Create Banner'}</span>
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Order Management & Status Update Modal */}
+      {orderModalOpen && selectedOrder && (
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-2xl w-full relative space-y-6 shadow-2xl my-4 text-slate-900 dark:text-white transition-colors duration-300">
+            <button onClick={() => setOrderModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1 border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
+                  {selectedOrder.id}
+                </span>
+                <span className="text-xs text-slate-400">
+                  {new Date(selectedOrder.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white pt-1">
+                Order Fulfillment & Payment Process
+              </h3>
+            </div>
+
+            {/* Customer & Address Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <h4 className="font-extrabold uppercase text-[10px] text-slate-400 tracking-wider">Customer Details</h4>
+                <p className="font-bold text-slate-900 dark:text-white">{selectedOrder.user?.name || selectedOrder.user?.email || 'Guest Customer'}</p>
+                <p className="text-slate-500 font-mono">{selectedOrder.user?.email || 'N/A'}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <h4 className="font-extrabold uppercase text-[10px] text-slate-400 tracking-wider">Payment & Total</h4>
+                <p className="font-bold text-slate-900 dark:text-white">{formatPrice(selectedOrder.totalAmount)}</p>
+                <div className="flex items-center space-x-2 text-[10px] pt-0.5">
+                  <span className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300 font-bold">
+                    {selectedOrder.payments?.[0]?.gateway || 'COD'}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded font-black ${
+                    newPaymentStatus === 'COMPLETED' || newPaymentStatus === 'PAID' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  }`}>
+                    {newPaymentStatus}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Items Table */}
+            <div className="space-y-2">
+              <h4 className="font-extrabold uppercase text-[10px] text-slate-400 tracking-wider">Purchased Items</h4>
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-2xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 uppercase font-extrabold text-[10px]">
+                    <tr>
+                      <th className="py-2.5 px-3">Item Variant</th>
+                      <th className="py-2.5 px-3">Price</th>
+                      <th className="py-2.5 px-3">Qty</th>
+                      <th className="py-2.5 px-3 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold">
+                    {(selectedOrder.orderItems || []).map((item: any) => (
+                      <tr key={item.id}>
+                        <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white">
+                          {item.productVariant?.product?.name || 'Product Item'}
+                        </td>
+                        <td className="py-2.5 px-3">{formatPrice(item.price)}</td>
+                        <td className="py-2.5 px-3 font-mono">{item.quantity}</td>
+                        <td className="py-2.5 px-3 text-right font-bold">{formatPrice(Number(item.price) * item.quantity)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Status Update Form */}
+            <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">Fulfillment Status *</label>
+                  <select
+                    value={newOrderStatus}
+                    onChange={(e) => setNewOrderStatus(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-purple-600 dark:focus:border-purple-500"
+                  >
+                    <option value="PENDING">PENDING — Placed</option>
+                    <option value="CONFIRMED">CONFIRMED — Payment verified</option>
+                    <option value="PROCESSING">PROCESSING — Packing items</option>
+                    <option value="SHIPPED">SHIPPED — Dispatched</option>
+                    <option value="DELIVERED">DELIVERED — Received</option>
+                    <option value="CANCELLED">CANCELLED — Refunded / Voided</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300">Payment Status *</label>
+                  <select
+                    value={newPaymentStatus}
+                    onChange={(e) => setNewPaymentStatus(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:outline-none focus:border-purple-600 dark:focus:border-purple-500"
+                  >
+                    <option value="PENDING">PENDING — Awaiting Payment</option>
+                    <option value="COMPLETED">COMPLETED — Payment Settled</option>
+                    <option value="REFUNDED">REFUNDED — Money Returned</option>
+                    <option value="FAILED">FAILED — Payment Rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-bold text-slate-700 dark:text-slate-300">Tracking Notes & Updates</label>
+                <input
+                  type="text"
+                  value={orderStatusNotes}
+                  onChange={(e) => setOrderStatusNotes(e.target.value)}
+                  placeholder="e.g. Dispatched via Courier express tracking #DHL-889421"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500"
+                />
+              </div>
+
+              <button
+                onClick={handleSaveOrderUpdate}
+                disabled={updatingOrderStatus}
+                className="w-full py-3.5 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20"
+              >
+                {updatingOrderStatus ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                <span>{updatingOrderStatus ? 'Updating Order...' : 'Save Order Process Changes'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

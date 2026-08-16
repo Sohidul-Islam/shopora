@@ -68,6 +68,13 @@ export class ProductService {
     await productRepository.adminSoftDeleteProduct(id);
   }
 
+  async hardDeleteProduct(actorRole: string, id: string) {
+    if (actorRole !== 'Admin' && actorRole !== 'Manager') throw new Error('Unauthorized.');
+    const existing = await productRepository.adminFindById(id);
+    if (!existing) throw new Error('Product not found.');
+    await productRepository.adminHardDeleteProduct(id);
+  }
+
   // ── ADMIN: CATEGORIES & SUB-CATEGORIES ───────────────────────────────────────
 
   async listCategories() {

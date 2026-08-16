@@ -33,8 +33,16 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   try {
     const user = await requireAdmin(req);
     const roleName = (user as any).role?.name || 'Admin';
-    await productService.deleteProduct(roleName, params.id);
-    return NextResponse.json({ success: true, message: 'Product deleted.' });
+    const { searchParams } = new URL(req.url);
+    const mode = searchParams.get('mode') || 'soft';
+
+    if (mode === 'hard') {
+      await productService.hardDeleteProduct(roleName, params.id);
+      return NextResponse.json({ success: true, message: 'Product permanently hard-deleted.' });
+    } else {
+      await productService.deleteProduct(roleName, params.id);
+      return NextResponse.json({ success: true, message: 'Product soft-deleted.' });
+    }
   } catch (error: any) {
     const status = error.message === 'Forbidden' ? 403 : error.message === 'Unauthorized' ? 401 : error.message.includes('not found') ? 404 : 400;
     return NextResponse.json({ success: false, error: error.message }, { status });

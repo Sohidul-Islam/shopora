@@ -340,6 +340,13 @@ export class ProductRepository {
     await db.update(products).set({ deletedAt: new Date() }).where(eq(products.id, id));
   }
 
+  async adminHardDeleteProduct(id: string) {
+    await db.delete(productCategories).where(eq(productCategories.productId, id));
+    await db.delete(productImages).where(eq(productImages.productId, id));
+    await db.delete(productVariants).where(eq(productVariants.productId, id));
+    await db.delete(products).where(eq(products.id, id));
+  }
+
   // ── ADMIN: PRODUCT-CATEGORY ASSIGNMENTS ──────────────────────────────────────
 
   async setProductCategories(productId: string, categoryIds: string[]) {
