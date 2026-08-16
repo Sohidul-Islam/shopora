@@ -32,7 +32,6 @@ export default function Home() {
   const { addToCart, toggleWishlist, isInWishlist } = useStore();
   const [products, setProducts] = useState<any[]>([]);
   const [banner, setBanner] = useState<any>(null);
-  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [addedItem, setAddedItem] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'new' | 'bestseller' | 'featured'>('new');
@@ -62,20 +61,8 @@ export default function Home() {
         console.error(err);
       }
     }
-    async function loadCategories() {
-      try {
-        const response = await fetch('/api/products?categories=true');
-        const res = await response.json();
-        if (res.success) {
-          setCategories(res.categories);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
     loadProducts();
     loadBanner();
-    loadCategories();
   }, []);
 
   const handleAddToCart = (prod: any) => {
@@ -419,17 +406,6 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-2.5 pt-1">
-                          {/* Stock status indicator */}
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                              <span>Stock Left</span>
-                              <span className="text-red-500">{variant?.stock || 5} items</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style={{ width: '40%' }}></div>
-                            </div>
-                          </div>
-                          
                           <button
                             onClick={() => handleAddToCart(prod)}
                             className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${
@@ -457,75 +433,6 @@ export default function Home() {
                 })}
               </div>
             )}
-          </div>
-        </section>
-
-        {/* BROWSE BY CATEGORY */}
-        <section className="py-24 px-6 sm:px-12 lg:px-24 bg-[#fafafa] dark:bg-[#05060b] space-y-12 transition-colors duration-300">
-          <div className="max-w-7xl mx-auto space-y-12">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-widest text-purple-650 dark:text-purple-400 font-display">Collections</span>
-                <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-slate-900 dark:text-white">Browse By Category</h2>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button className="p-3 border border-black/10 dark:border-white/10 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 hover:border-black/20 dark:hover:border-white/30 transition">
-                  <ChevronLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                </button>
-                <button className="p-3 border border-black/10 dark:border-white/10 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 hover:border-black/20 dark:hover:border-white/30 transition">
-                  <ChevronRight className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {categories.length === 0 ? (
-                // Fallback static categories
-                [
-                  { name: 'Phones', slug: 'phones', icon: Smartphone },
-                  { name: 'Smart Watches', slug: 'watches', icon: Watch },
-                  { name: 'Cameras', slug: 'cameras', icon: Camera },
-                  { name: 'Headphones', slug: 'headphones', icon: Headphones },
-                  { name: 'Computers', slug: 'computers', icon: Monitor },
-                  { name: 'Gaming', slug: 'gaming', icon: Gamepad2 },
-                ].map((cat) => {
-                  const Icon = cat.icon;
-                  return (
-                    <Link
-                      key={cat.slug}
-                      href={`/products?category=${cat.slug}`}
-                      className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-purple-500/35 hover:shadow-2xl hover:shadow-purple-600/5 transition duration-300 py-8 px-4 rounded-3xl flex flex-col items-center justify-center text-center space-y-3 group"
-                    >
-                      <div className="p-3 bg-black/5 dark:bg-white/5 rounded-2xl group-hover:bg-purple-600/10 group-hover:text-purple-400 transition duration-300">
-                        <Icon className="w-7 h-7 text-slate-700 dark:text-slate-300 stroke-[1.5]" />
-                      </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 group-hover:text-purple-650 dark:group-hover:text-white transition">{cat.name}</span>
-                    </Link>
-                  );
-                })
-              ) : (
-                categories.map((cat) => {
-                  let Icon = Smartphone;
-                  if (cat.slug.includes('electronics')) Icon = Monitor;
-                  else if (cat.slug.includes('footwear')) Icon = Gamepad2;
-                  else if (cat.slug.includes('apparel')) Icon = Watch;
-                  else if (cat.slug.includes('accessories')) Icon = Camera;
-
-                  return (
-                    <Link
-                      key={cat.id}
-                      href={`/products?category=${cat.slug}`}
-                      className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-purple-500/35 hover:shadow-2xl hover:shadow-purple-600/5 transition duration-300 py-8 px-4 rounded-3xl flex flex-col items-center justify-center text-center space-y-3 group"
-                    >
-                      <div className="p-3 bg-black/5 dark:bg-white/5 rounded-2xl group-hover:bg-purple-600/10 group-hover:text-purple-400 transition duration-300">
-                        <Icon className="w-7 h-7 text-slate-700 dark:text-slate-300 stroke-[1.5]" />
-                      </div>
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 group-hover:text-purple-650 dark:group-hover:text-white transition">{cat.name}</span>
-                    </Link>
-                  );
-                })
-              )}
-            </div>
           </div>
         </section>
 
