@@ -221,6 +221,7 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [prodFormSaving, setProdFormSaving] = useState(false);
   const [prodForm, setProdForm] = useState({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] as string[] });
+  const [productDescriptionBlocks, setProductDescriptionBlocks] = useState<CmsBlock[]>([]);
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
@@ -408,6 +409,12 @@ export default function AdminDashboard() {
   const openAddProduct = () => {
     setEditingProduct(null);
     setProdForm({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] });
+    setProductDescriptionBlocks([
+      { id: 'b1', type: 'heading', headingLevel: 'h2', content: 'Product Overview & Key Features' },
+      { id: 'b2', type: 'text', content: 'Comprehensive summary of product design, engineering, performance metrics, and build materials.' },
+      { id: 'b3', type: 'table', tableHeaders: ['Specification', 'Value', 'Details'], tableRows: [['Material', 'Aircraft-grade Aluminum', 'Lightweight'], ['Warranty', '1 Year Full Coverage', 'Parts & Labor']] },
+      { id: 'b4', type: 'callout', calloutType: 'info', content: 'Package includes original packaging, standard accessories, user manual, and warranty registration card.' }
+    ]);
     setProductImages([]);
     setPendingNewImageUrls([]);
     setShowProductModal(true);
@@ -426,6 +433,25 @@ export default function AdminDashboard() {
       status: p.status || 'DRAFT',
       categoryIds: (p.productCategories || []).map((pc: any) => pc.categoryId || pc.category?.id).filter(Boolean),
     });
+
+    let blocks: CmsBlock[] = [];
+    try {
+      if (p.description && p.description.startsWith('[')) {
+        blocks = JSON.parse(p.description);
+      } else {
+        blocks = [
+          { id: 'b1', type: 'heading', headingLevel: 'h2', content: 'Product Overview' },
+          { id: 'b2', type: 'text', content: p.description || 'Enter detailed product description...' }
+        ];
+      }
+    } catch {
+      blocks = [
+        { id: 'b1', type: 'heading', headingLevel: 'h2', content: 'Product Overview' },
+        { id: 'b2', type: 'text', content: p.description || '' }
+      ];
+    }
+    setProductDescriptionBlocks(blocks);
+
     setProductImages([]);
     setPendingNewImageUrls([]);
     fetchProductImages(p.id);
@@ -436,7 +462,13 @@ export default function AdminDashboard() {
     e.preventDefault();
     setProdFormSaving(true);
     try {
-      const payload = { ...prodForm, price: String(prodForm.price), salePrice: prodForm.salePrice ? String(prodForm.salePrice) : undefined };
+      const descriptionString = JSON.stringify(productDescriptionBlocks);
+      const payload = {
+        ...prodForm,
+        description: descriptionString,
+        price: String(prodForm.price),
+        salePrice: prodForm.salePrice ? String(prodForm.salePrice) : undefined
+      };
       const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products';
       const method = editingProduct ? 'PATCH' : 'POST';
       const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -2761,17 +2793,21 @@ export default function AdminDashboard() {
       {/* 4. CRUD Modals */}
       {/* Product Add/Edit Modal */}
       {showProductModal && (
-        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-3xl p-7 max-w-2xl w-full relative space-y-5 shadow-2xl my-4 text-slate-900 dark:text-white transition-colors duration-300">
-            <button onClick={() => setShowProductModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"><X className="w-5 h-5" /></button>
-            <div>
-              <h3 className="text-xl font-black font-display text-slate-900 dark:text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">All fields marked * are required. Changes persist to the database.</p>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-[#0c0d15] border border-black/10 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl w-full relative shadow-2xl my-auto text-slate-900 dark:text-white transition-colors duration-300 flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+              <div>
+                <h3 className="text-lg sm:text-xl font-black font-display text-slate-900 dark:text-white">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">All fields marked * are required. Changes persist to the database.</p>
+              </div>
+              <button onClick={() => setShowProductModal(false)} className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition"><X className="w-5 h-5" /></button>
             </div>
 
-            <form onSubmit={saveProduct} className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {/* Scrollable Form Body */}
+            <form onSubmit={saveProduct} className="flex-1 overflow-y-auto py-4 pr-1 sm:pr-2 space-y-5 text-xs font-semibold text-slate-700 dark:text-slate-300 custom-scrollbar">
               {/* Row 1: Name + Slug */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold">Product Name *</label>
                   <input type="text" required value={prodForm.name}
@@ -2789,7 +2825,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Row 2: SKU + Brand */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold">SKU Code *</label>
                   <input type="text" required value={prodForm.sku}
@@ -2808,7 +2844,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Row 3: Price + Sale Price */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold">Regular Price * (BDT)</label>
                   <input type="number" required step="0.01" value={prodForm.price}
@@ -2825,40 +2861,31 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-1">
-                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Description</label>
-                <textarea value={prodForm.description}
-                  onChange={(e) => setProdForm({ ...prodForm, description: e.target.value })}
-                  rows={3}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors resize-none"
-                  placeholder="Product description..." />
+              {/* Row 4: Categories + Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Categories <span className="text-slate-400 font-normal">(hold Ctrl/Cmd to multi-select)</span></label>
+                  <select multiple value={prodForm.categoryIds}
+                    onChange={(e) => setProdForm({ ...prodForm, categoryIds: Array.from(e.target.selectedOptions, o => o.value) })}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors" style={{ height: '100px' }}>
+                    {categoriesList.map((c: any) => (
+                      <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.parentId ? '↳ ' : ''}{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold">Publication Status *</label>
+                  <select value={prodForm.status} onChange={(e) => setProdForm({ ...prodForm, status: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
+                    <option value="DRAFT" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">DRAFT — not visible to customers</option>
+                    <option value="PUBLISHED" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">PUBLISHED — live on storefront</option>
+                    <option value="OUT_OF_STOCK" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">OUT_OF_STOCK — shown but unavailable</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Categories */}
-              <div className="space-y-1">
-                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Categories <span className="text-slate-400 font-normal">(hold Ctrl/Cmd to multi-select)</span></label>
-                <select multiple value={prodForm.categoryIds}
-                  onChange={(e) => setProdForm({ ...prodForm, categoryIds: Array.from(e.target.selectedOptions, o => o.value) })}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors" style={{ height: '100px' }}>
-                  {categoriesList.map((c: any) => (
-                    <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{c.parentId ? '↳ ' : ''}{c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status */}
-              <div className="space-y-1">
-                <label className="block text-slate-700 dark:text-slate-300 font-semibold">Publication Status *</label>
-                <select value={prodForm.status} onChange={(e) => setProdForm({ ...prodForm, status: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white focus:outline-none focus:border-purple-600 dark:focus:border-purple-500 transition-colors">
-                  <option value="DRAFT" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">DRAFT — not visible to customers</option>
-                  <option value="PUBLISHED" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">PUBLISHED — live on storefront</option>
-                  <option value="OUT_OF_STOCK" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">OUT_OF_STOCK — shown but unavailable</option>
-                </select>
-              </div>
-
-              {/* Product Image Gallery — ALWAYS VISIBLE for both Add Product and Edit Product */}
+              {/* Product Image Gallery */}
               <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
                 <ProductImageGallery
                   productId={editingProduct ? editingProduct.id : null}
@@ -2870,11 +2897,38 @@ export default function AdminDashboard() {
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Upload device files or paste direct Image URLs. The first image becomes the primary display image.</p>
               </div>
 
-              <button type="submit" disabled={prodFormSaving}
-                className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
-                {prodFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
-                <span>{prodFormSaving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create Product'}</span>
-              </button>
+              {/* Rich Product Details CMS Block Builder — Bottom-most section */}
+              <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-1">
+                  <label className="block text-slate-700 dark:text-slate-300 font-bold text-sm">
+                    Detailed Product Description & Specifications Editor
+                  </label>
+                  <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold uppercase tracking-wider bg-purple-500/10 px-2 py-0.5 rounded">
+                    CMS Block Builder Active
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">Construct rich product details, headings, images, spec tables, callouts, and feature blocks.</p>
+                <CmsSectionBuilder blocks={productDescriptionBlocks} onChange={setProductDescriptionBlocks} productsList={productsList} />
+              </div>
+
+              {/* Footer Controls Bar */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowProductModal(false)}
+                  className="w-full sm:w-auto py-3 px-6 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 font-bold text-slate-600 dark:text-slate-400 rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={prodFormSaving}
+                  className="w-full sm:flex-1 py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30"
+                >
+                  {prodFormSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  <span>{prodFormSaving ? 'Saving Product...' : editingProduct ? 'Save Product Changes' : 'Create Product'}</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -9,6 +9,118 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ProductImageMagnifier } from '../../../components/ProductImageMagnifier';
+function RenderProductDetails({ description }: { description: string }) {
+  let blocks: any[] = [];
+  let isJson = false;
+
+  try {
+    if (description && description.trim().startsWith('[')) {
+      blocks = JSON.parse(description);
+      isJson = Array.isArray(blocks);
+    }
+  } catch {
+    isJson = false;
+  }
+
+  if (!isJson || blocks.length === 0) {
+    return (
+      <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+        <p className="whitespace-pre-line">{description}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 text-slate-700 dark:text-slate-300 leading-relaxed max-w-4xl">
+      {blocks.map((b: any) => {
+        if (b.type === 'heading') {
+          if (b.headingLevel === 'h1') return <h1 key={b.id} className="text-2xl font-black text-slate-900 dark:text-white pt-2">{b.content}</h1>;
+          if (b.headingLevel === 'h3') return <h3 key={b.id} className="text-lg font-bold text-slate-900 dark:text-white pt-2">{b.content}</h3>;
+          return <h2 key={b.id} className="text-xl font-bold text-slate-900 dark:text-white pt-2 border-b border-slate-200 dark:border-slate-800 pb-2">{b.content}</h2>;
+        }
+
+        if (b.type === 'text') {
+          return <p key={b.id} className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 whitespace-pre-line">{b.content}</p>;
+        }
+
+        if (b.type === 'image' && b.imageUrl) {
+          return (
+            <div key={b.id} className="my-4 space-y-2">
+              <div className="rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <img src={b.imageUrl} alt={b.caption || 'Product detail'} className="w-full max-h-[480px] object-cover" />
+              </div>
+              {b.caption && <p className="text-center text-xs text-slate-400 italic">{b.caption}</p>}
+            </div>
+          );
+        }
+
+        if (b.type === 'split_image_text') {
+          return (
+            <div key={b.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center my-6 p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+              {b.imageUrl && (
+                <div className={`rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 ${b.imagePosition === 'right' ? 'md:order-2' : ''}`}>
+                  <img src={b.imageUrl} alt="Feature" className="w-full h-56 object-cover" />
+                </div>
+              )}
+              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <p className="whitespace-pre-line">{b.content}</p>
+              </div>
+            </div>
+          );
+        }
+
+        if (b.type === 'callout') {
+          const typeClass = b.calloutType === 'warning' ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' :
+            b.calloutType === 'tip' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' :
+            'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400';
+          return (
+            <div key={b.id} className={`p-4 rounded-xl border text-xs font-semibold ${typeClass}`}>
+              {b.content}
+            </div>
+          );
+        }
+
+        if (b.type === 'table') {
+          return (
+            <div key={b.id} className="my-6 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden text-xs shadow-sm">
+              <table className="w-full text-left border-collapse">
+                {b.tableHeaders && b.tableHeaders.length > 0 && (
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-extrabold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                      {b.tableHeaders.map((h: string, idx: number) => (
+                        <th key={idx} className="py-3 px-4">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                )}
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-slate-600 dark:text-slate-350">
+                  {(b.tableRows || []).map((row: string[], rIdx: number) => (
+                    <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-slate-50/50 dark:bg-white/[0.02]' : ''}>
+                      {row.map((cell: string, cIdx: number) => (
+                        <td key={cIdx} className="py-2.5 px-4 font-medium">{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+
+        if (b.type === 'quote') {
+          return (
+            <blockquote key={b.id} className="my-4 p-4 border-l-4 border-purple-600 bg-purple-50 dark:bg-purple-500/10 text-slate-800 dark:text-slate-200 italic rounded-r-xl text-sm">
+              "{b.content}"
+              {b.quoteAuthor && <cite className="block text-xs font-bold text-purple-600 dark:text-purple-400 not-italic mt-1">— {b.quoteAuthor}</cite>}
+            </blockquote>
+          );
+        }
+
+        return <p key={b.id} className="text-sm text-slate-600 dark:text-slate-400">{b.content}</p>;
+      })}
+    </div>
+  );
+}
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const { addToCart, toggleWishlist, isInWishlist } = useStore();
@@ -278,10 +390,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
         </div>
 
         {activeTab === 'details' && (
-          <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
-            <p>{product.description}</p>
-            <p>Experience flagship performance in everyday tasks. Built with sustainability in mind, utilizing recycled components and highly efficient processors that optimize battery cycles.</p>
-          </div>
+          <RenderProductDetails description={product.description || ''} />
         )}
 
         {activeTab === 'specs' && (
