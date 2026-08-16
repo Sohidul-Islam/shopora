@@ -215,22 +215,36 @@ export function ImageUploader({
   );
 }
 
-// Multi-image gallery manager (supporting both device upload & direct URL link)
+// Multi-image gallery manager (supporting both existing product & creation pending images)
 interface ProductImageGalleryProps {
-  productId: string;
-  images: Array<{ id: string; url: string; sortOrder: number }>;
-  onRefresh: () => void;
+  productId?: string | null;
+  images: Array<{ id: string; url: string; sortOrder?: number }>;
+  onRefresh?: () => void;
+  onAddPendingUrl?: (url: string) => void;
+  onRemovePendingUrl?: (url: string) => void;
 }
 
-export function ProductImageGallery({ productId, images, onRefresh }: ProductImageGalleryProps) {
+export function ProductImageGallery({
+  productId,
+  images,
+  onRefresh,
+  onAddPendingUrl,
+  onRemovePendingUrl,
+}: ProductImageGalleryProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [directUrl, setDirectUrl] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const linkImageUrl = async (url: string) => {
+  const handleAddUrl = async (url: string) => {
     setError('');
+    if (!productId) {
+      // Pending mode for Add Product
+      onAddPendingUrl?.(url);
+      return;
+    }
+
     setUploading(true);
     const token = useStore.getState().sessionToken;
     try {
@@ -244,7 +258,7 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
       });
       const linkData = await linkRes.json();
       if (!linkData.success) throw new Error(linkData.error);
-      onRefresh();
+      onRefresh?.();
     } catch (err: any) {
       setError(err.message || 'Linking image failed');
     } finally {
@@ -270,7 +284,7 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
       const uploadData = await uploadRes.json();
       if (!uploadData.success) throw new Error(uploadData.error);
 
-      await linkImageUrl(uploadData.url);
+      await handleAddUrl(uploadData.url);
     } catch (err: any) {
       setError(err.message || 'Upload failed');
     } finally {
@@ -281,16 +295,21 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
   const handleAddDirectUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!directUrl.trim()) return;
-    await linkImageUrl(directUrl.trim());
+    await handleAddUrl(directUrl.trim());
     setDirectUrl('');
     setShowUrlInput(false);
   };
 
-  const deleteImage = async (imageId: string) => {
+  const deleteImage = async (img: { id: string; url: string }) => {
     if (!confirm('Remove this image?')) return;
+    if (!productId) {
+      onRemovePendingUrl?.(img.url);
+      return;
+    }
+
     const token = useStore.getState().sessionToken;
     try {
-      const res = await fetch(`/api/admin/products/${productId}/images/${imageId}`, { 
+      const res = await fetch(`/api/admin/products/${productId}/images/${img.id}`, { 
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -298,7 +317,7 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
-      onRefresh();
+      onRefresh?.();
     } catch (err: any) {
       setError(err.message || 'Delete failed');
     }
@@ -364,14 +383,14 @@ export function ProductImageGallery({ productId, images, onRefresh }: ProductIma
       ) : (
         <div className="grid grid-cols-4 gap-2">
           {images.map((img, idx) => (
-            <div key={img.id} className="relative group rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 aspect-square">
+            <div key={img.id || idx} className="relative group rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 aspect-square">
               <img src={img.url} alt={`Product image ${idx + 1}`} className="w-full h-full object-cover" />
               {idx === 0 && (
                 <span className="absolute top-1 left-1 text-[9px] bg-purple-650 text-white px-1.5 py-0.5 rounded font-bold shadow-sm">PRIMARY</span>
               )}
               <button
                 type="button"
-                onClick={() => deleteImage(img.id)}
+                onClick={() => deleteImage(img)}
                 className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all text-white"
               >
                 <X className="w-3 h-3" />

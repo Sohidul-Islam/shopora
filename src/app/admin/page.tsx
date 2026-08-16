@@ -403,10 +403,13 @@ export default function AdminDashboard() {
   const toSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   // Products CRUD handlers
+  const [pendingNewImageUrls, setPendingNewImageUrls] = useState<string[]>([]);
+
   const openAddProduct = () => {
     setEditingProduct(null);
     setProdForm({ name: '', slug: '', sku: '', brandId: '', price: '', salePrice: '', description: '', status: 'DRAFT', categoryIds: [] });
     setProductImages([]);
+    setPendingNewImageUrls([]);
     setShowProductModal(true);
   };
 
@@ -424,6 +427,7 @@ export default function AdminDashboard() {
       categoryIds: (p.productCategories || []).map((pc: any) => pc.categoryId || pc.category?.id).filter(Boolean),
     });
     setProductImages([]);
+    setPendingNewImageUrls([]);
     fetchProductImages(p.id);
     setShowProductModal(true);
   };
@@ -438,6 +442,20 @@ export default function AdminDashboard() {
       const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
+
+      // Link pending images if creating a new product
+      if (!editingProduct && data.product?.id && pendingNewImageUrls.length > 0) {
+        for (const imgUrl of pendingNewImageUrls) {
+          try {
+            await adminFetch(`/api/admin/products/${data.product.id}/images`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: imgUrl })
+            });
+          } catch {}
+        }
+      }
+
       showToast(editingProduct ? 'Product updated successfully!' : 'Product created successfully!');
       setShowProductModal(false);
       fetchProducts();
@@ -2823,17 +2841,17 @@ export default function AdminDashboard() {
                 </select>
               </div>
 
-              {/* Product Image Gallery — shown when editing OR after product is created */}
-              {editingProduct && (
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <ProductImageGallery
-                    productId={editingProduct.id}
-                    images={productImages}
-                    onRefresh={() => fetchProductImages(editingProduct.id)}
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Tip: Save the product first, then upload images. First image becomes the primary display image.</p>
-                </div>
-              )}
+              {/* Product Image Gallery — ALWAYS VISIBLE for both Add Product and Edit Product */}
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <ProductImageGallery
+                  productId={editingProduct ? editingProduct.id : null}
+                  images={editingProduct ? productImages : pendingNewImageUrls.map((url, i) => ({ id: `pending-${i}`, url, sortOrder: i }))}
+                  onRefresh={() => editingProduct && fetchProductImages(editingProduct.id)}
+                  onAddPendingUrl={(url) => setPendingNewImageUrls(prev => [...prev, url])}
+                  onRemovePendingUrl={(url) => setPendingNewImageUrls(prev => prev.filter(u => u !== url))}
+                />
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Upload device files or paste direct Image URLs. The first image becomes the primary display image.</p>
+              </div>
 
               <button type="submit" disabled={prodFormSaving}
                 className="w-full py-3 bg-purple-650 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500 disabled:opacity-60 text-white font-bold rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-purple-650/20 dark:shadow-purple-600/30">
